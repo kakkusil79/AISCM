@@ -1,28 +1,26 @@
 import { useMemo, useRef, useState } from 'react'
 import {
-  AlertTriangle,
-  ArrowRight,
-  Building2,
-  Check,
-  CheckCircle2,
-  ClipboardList,
-  Cpu,
+  Anchor,
+  Compass,
+  Crown,
   FileCheck2,
   FileSpreadsheet,
   FileText,
   FolderOpen,
+  Gem,
   GripVertical,
-  Layers,
-  Mail,
-  Package,
+  MapPin,
   Plus,
   Printer,
   RotateCcw,
+  ScrollText,
   Send,
-  ShieldCheck,
+  Ship,
+  Skull,
   Sparkles,
+  Swords,
+  Trophy,
   UploadCloud,
-  UserCheck,
   X,
 } from 'lucide-react'
 import {
@@ -56,7 +54,7 @@ interface SampleDraggableFile {
 const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
   {
     id: 'SAMPLE-1',
-    fileName: '투썸플레이스_표준키오스크_발주서(35대).pdf',
+    fileName: '🍾 투썸왕국_표준키오스크_의뢰서(35대).pdf',
     fileType: 'PDF',
     docNo: 'TWS-PO-2026-1108',
     buyerName: '투썸플레이스 가맹본부',
@@ -70,11 +68,11 @@ const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
     suggestedQty: 35,
     dueDate: '2026-11-24',
     docMemo: '수도권 직영·가맹 리뉴얼 매장 35개점 표준 21인치 키오스크 납품건',
-    badgeText: '정상 수량 (35대)',
+    badgeText: '✨ 정상 보물 의뢰 (35대)',
   },
   {
     id: 'SAMPLE-2',
-    fileName: '컴포즈커피_미니키오스크_주문서(2대_오타).xlsx',
+    fileName: '☠️ 컴포즈길드_미니키오스크_함정문서(2대).xlsx',
     fileType: 'EXCEL',
     docNo: 'CMP-202611-042',
     buyerName: '컴포즈커피 코리아(주)',
@@ -89,11 +87,11 @@ const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
     dueDate: '2026-11-21',
     docMemo:
       '영남권 신규 오픈 매장 20개점 카운터형 키오스크 일괄 발주건 (엑셀 입력 시 20대가 2대로 잘못 기재됨)',
-    badgeText: '과소 수량 오류 (2대)',
+    badgeText: '💀 저주받은 과소수량 (2대)',
   },
   {
     id: 'SAMPLE-3',
-    fileName: '롯데시네마_대화면키오스크_발주(990대_오타).pdf',
+    fileName: '☠️ 롯데시네마_대화면키오스크_오타문서(990대).pdf',
     fileType: 'PDF',
     docNo: 'LTC-PO-261109',
     buyerName: '롯데시네마 멀티플렉스',
@@ -108,11 +106,11 @@ const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
     dueDate: '2026-11-26',
     docMemo:
       '전국 주요 극장 티켓 무인발권기 30대 교체 발주 (담당자 키보드 오타로 990대로 입력됨)',
-    badgeText: '이상 수량 오타 (990대)',
+    badgeText: '💀 거대 숫자 괴물 (990대)',
   },
   {
     id: 'SAMPLE-4',
-    fileName: '파리바게뜨_빌트인키오스크_발주서(15대).xlsx',
+    fileName: '🍾 파리바게뜨_빌트인키오스크_의뢰서(15대).xlsx',
     fileType: 'EXCEL',
     docNo: 'SPC-PB-2026-77',
     buyerName: '파리바게뜨 SPC본사',
@@ -126,9 +124,35 @@ const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
     suggestedQty: 15,
     dueDate: '2026-11-28',
     docMemo: '대형 플래그십 스토어 15개점 매립형 32인치 와이드 키오스크 정식 발주',
-    badgeText: '정상 수량 (15대)',
+    badgeText: '✨ 정상 보물 의뢰 (15대)',
   },
 ]
+
+const ISLAND_META: Record<
+  string,
+  { islandTitle: string; emoji: string; desc: string }
+> = {
+  한빛디스플레이: {
+    islandTitle: '빛의 수정섬 (한빛디스플레이 길드)',
+    emoji: '🔮',
+    desc: '신비한 15·21·27·32인치 마법 터치패널 유물을 깎아내는 수정 장인들의 섬',
+  },
+  코리아임베디드: {
+    islandTitle: '강철 심장섬 (코리아임베디드 길드)',
+    emoji: '⚙️',
+    desc: '키오스크의 두뇌인 통합 메인보드와 고효율 마력 전원장치를 벼려내는 기계섬',
+  },
+  페이먼트테크: {
+    islandTitle: '황금 주화섬 (페이먼트테크 길드)',
+    emoji: '🪙',
+    desc: '황금 카드 리더기와 영수증 두루마리 인쇄기를 제작하는 상인 길드의 본거지',
+  },
+  정밀메탈웍스: {
+    islandTitle: '무쇠 대장간섬 (정밀메탈웍스 길드)',
+    emoji: '🛡️',
+    desc: '어떤 폭풍우도 견디는 키오스크 강철 외함 갑옷을 두드리는 드워프 대장간섬',
+  },
+}
 
 function formatCurrency(won: number): string {
   const man = won / 10000
@@ -136,10 +160,10 @@ function formatCurrency(won: number): string {
     const eok = Math.floor(man / 10000)
     const restMan = man % 10000
     return restMan > 0
-      ? `${eok}억 ${restMan.toLocaleString()}만 원`
-      : `${eok}억 원`
+      ? `${eok}억 ${restMan.toLocaleString()}만 골드(원)`
+      : `${eok}억 골드(원)`
   }
-  return `${man.toLocaleString()}만 원`
+  return `${man.toLocaleString()}만 골드(원)`
 }
 
 function App() {
@@ -148,7 +172,7 @@ function App() {
   const [selectedModelTab, setSelectedModelTab] = useState<KioskModelId | 'ALL'>('ALL')
   const [showAddForm, setShowAddForm] = useState(false)
 
-  // 문서 열람 모달 상태 (바이어 주문서 원문 모달 / 발주처 발주서(PO) 모달 / 통합 문서함 모달)
+  // 문서 열람 모달 상태
   const [viewingBuyerOrderId, setViewingBuyerOrderId] = useState<string | null>(null)
   const [viewingSupplierPoName, setViewingSupplierPoName] = useState<string | null>(null)
   const [showDocArchiveModal, setShowDocArchiveModal] = useState(false)
@@ -219,7 +243,7 @@ function App() {
       dueDate: params.dueDate,
       docMemo:
         params.docMemo ||
-        `${params.buyerName} ${params.modelId} 키오스크 발주서 (원본파일: ${params.sourceLabel})`,
+        `${params.buyerName} ${params.modelId} 키오스크 발주 의뢰서 (원본: ${params.sourceLabel})`,
       errorMsg: err,
       confirmed: !err,
     }
@@ -234,11 +258,11 @@ function App() {
         [nextId]: String(fallbackSuggest),
       }))
       showUploadBanner(
-        `📄 [${params.sourceLabel}] 주문서 분석 완료 — 이상 수량(${params.quantity}대)이 감지되어 1차 사람 확인 대기 목록에 추가되었습니다.`
+        `☠️ [${params.sourceLabel}] 유리병 편지에서 숫자 함정(${params.quantity}대) 발견! 선장님(1차 사람 확인)의 해독이 필요합니다!`
       )
     } else {
       showUploadBanner(
-        `✅ [${params.sourceLabel}] 주문서 분석 완료 — ${params.buyerName} (${params.modelId} · ${params.quantity}대) 정상 등록되어 BOM 및 재고에 반영되었습니다.`
+        `🪙 [${params.sourceLabel}] 유리병 의뢰서 해독 성공! ${params.buyerName} (${params.modelId} · ${params.quantity}대) 보물 지도에 등록 완료!`
       )
     }
     setPoConfirmMap({})
@@ -332,7 +356,7 @@ function App() {
 
     const nextQty = rawVal !== undefined ? Number(rawVal) : targetOrder.quantity
     if (!Number.isFinite(nextQty) || nextQty <= 0 || !Number.isInteger(nextQty)) {
-      alert('수량은 1 이상의 정수로 입력해주세요.')
+      alert('선장님! 수량은 1 이상의 정수로 해독해 주세요!')
       return
     }
 
@@ -361,7 +385,7 @@ function App() {
       modelId: newModel,
       quantity: Number(newQty),
       dueDate: newDue,
-      sourceLabel: '수기 입력 주문서',
+      sourceLabel: '선장님 직속 의뢰서',
     })
     setNewBuyer('')
     setNewQty('')
@@ -402,7 +426,7 @@ function App() {
     })
   }, [orders, materials])
 
-  // 부족한 부자재를 발주처별로 묶어 정식 발주서(PO) 생성
+  // 부족한 부자재를 발주처(보물섬 길드)별로 묶어 정식 발주서(PO) 생성
   const supplierPOs: SupplierPO[] = useMemo(() => {
     const map = new Map<string, SupplierPO>()
     let idx = 1
@@ -414,10 +438,10 @@ function App() {
         name: item.supplierName,
         bizNo: '120-88-00102',
         ceo: '대표이사',
-        contactName: '영업담당',
+        contactName: '길드장',
         phone: '02-000-0000',
         email: item.supplierEmail,
-        address: '경기도 산업단지',
+        address: '보물섬 장인 마을',
         leadTimeDays: 5,
       }
 
@@ -475,6 +499,9 @@ function App() {
       ...prev,
       [supplierName]: true,
     }))
+    showUploadBanner(
+      `🦅 [${supplierName}] 보물섬 길드로 황금 전서구(발주서 메일)가 출항했습니다! 곧 부자재 보물선이 도착합니다!`
+    )
   }
 
   // 요약 수치
@@ -490,7 +517,7 @@ function App() {
   const viewingSupplierPo =
     supplierPOs.find((p) => p.supplierName === viewingSupplierPoName) || null
 
-  // 바이어 주문서 정식 양식 렌더링 컴포넌트
+  // 양피지 스타일 바이어 주문서 원문 문서 렌더링
   const renderBuyerOrderDocument = (ord: BuyerOrder) => {
     const modelObj = KIOSK_MODELS.find((m) => m.id === ord.modelId)
     const supplyAmount = ord.quantity * 4000000
@@ -498,42 +525,40 @@ function App() {
     const totalAmount = supplyAmount + vatAmount
 
     return (
-      <div className="bg-white border-2 border-stone-800 rounded-xl p-6 md:p-8 text-stone-900 space-y-6 shadow-sm">
-        {/* 문서 상단 타이틀 및 문서번호 */}
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-stone-800 pb-5">
+      <div className="bg-[#FDF6E2] border-4 border-[#8B5A2B] rounded-2xl p-6 md:p-8 text-[#3B2313] space-y-6 shadow-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-[#8B5A2B] pb-5">
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded bg-stone-800 text-white text-xs font-bold mb-1.5">
-              바이어 원본 구매주문서 (PURCHASE ORDER)
+            <span className="inline-block px-3 py-1 rounded-full bg-[#8B5A2B] text-[#FDF6E2] text-xs font-extrabold mb-1.5">
+              📜 바이어 원본 의뢰서 (BUYER PURCHASE ORDER)
             </span>
-            <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-stone-900">
+            <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#3B2313]">
               물 품 구 매 주 문 서
             </h3>
-            <p className="text-sm text-stone-600 mt-1">
+            <p className="text-sm text-[#6B4423] mt-1 font-semibold">
               문서번호: <strong className="font-mono">{ord.docNo}</strong> · 발주일자:{' '}
               <strong className="font-mono">{ord.orderDate}</strong>
             </p>
           </div>
 
-          {/* 결재란 박스 */}
-          <div className="border border-stone-400 text-center text-xs">
-            <div className="grid grid-cols-3 bg-stone-100 border-b border-stone-400 font-bold">
-              <div className="px-4 py-1 border-r border-stone-400">담 당</div>
-              <div className="px-4 py-1 border-r border-stone-400">팀 장</div>
-              <div className="px-4 py-1">대표이사</div>
+          <div className="border-2 border-[#8B5A2B] bg-[#F5E6C4] text-center text-xs rounded-lg overflow-hidden">
+            <div className="grid grid-cols-3 bg-[#E6CFA0] border-b border-[#8B5A2B] font-extrabold text-[#3B2313]">
+              <div className="px-4 py-1 border-r border-[#8B5A2B]">담 당</div>
+              <div className="px-4 py-1 border-r border-[#8B5A2B]">팀 장</div>
+              <div className="px-4 py-1">길드장(대표)</div>
             </div>
-            <div className="grid grid-cols-3 h-12 items-center font-serif text-stone-700">
-              <div className="px-3 border-r border-stone-400 h-full flex items-center justify-center">
-                <span className="border border-rose-600 text-rose-600 rounded-full px-1.5 py-0.5 text-[11px] font-bold">
+            <div className="grid grid-cols-3 h-12 items-center">
+              <div className="px-3 border-r border-[#8B5A2B] h-full flex items-center justify-center">
+                <span className="border-2 border-red-700 text-red-700 rounded-full px-1.5 py-0.5 text-[11px] font-extrabold">
                   {ord.buyerManager.split(' ')[0]}인
                 </span>
               </div>
-              <div className="px-3 border-r border-stone-400 h-full flex items-center justify-center">
-                <span className="border border-rose-600 text-rose-600 rounded-full px-1.5 py-0.5 text-[11px] font-bold">
+              <div className="px-3 border-r border-[#8B5A2B] h-full flex items-center justify-center">
+                <span className="border-2 border-red-700 text-red-700 rounded-full px-1.5 py-0.5 text-[11px] font-extrabold">
                   승인
                 </span>
               </div>
               <div className="px-3 h-full flex items-center justify-center">
-                <span className="border-2 border-rose-700 text-rose-700 rounded px-1.5 py-0.5 text-[11px] font-extrabold">
+                <span className="border-2 border-red-800 bg-red-100 text-red-800 rounded px-1.5 py-0.5 text-[11px] font-extrabold">
                   {ord.buyerCeo}직인
                 </span>
               </div>
@@ -541,119 +566,117 @@ function App() {
           </div>
         </div>
 
-        {/* 발주자(바이어) 및 수주자(당사) 정보 표 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="border border-stone-300 rounded-lg overflow-hidden">
-            <div className="bg-stone-100 px-4 py-2 font-extrabold text-stone-800 border-b border-stone-300">
-              발주처 (공급받는자 / 바이어)
+          <div className="border-2 border-[#C19A6B] bg-[#FAF0D7] rounded-xl overflow-hidden">
+            <div className="bg-[#E6CFA0] px-4 py-2 font-extrabold text-[#3B2313] border-b border-[#C19A6B]">
+              🏰 의뢰 왕국 (공급받는자 / 바이어)
             </div>
             <div className="p-3.5 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-stone-500">상호(법인명):</span>
-                <strong className="text-stone-900">{ord.buyerName}</strong>
+                <span className="text-[#6B4423]">상호(법인명):</span>
+                <strong className="text-[#3B2313]">{ord.buyerName}</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">사업자번호 / 대표자:</span>
-                <span className="font-mono">
+                <span className="text-[#6B4423]">사업자번호 / 대표자:</span>
+                <span className="font-mono font-bold">
                   {ord.buyerBizNo} / {ord.buyerCeo}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">발주 담당자:</span>
-                <span>
+                <span className="text-[#6B4423]">발주 담당자:</span>
+                <span className="font-semibold">
                   {ord.buyerManager} ({ord.buyerPhone})
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">납품 요청장소:</span>
-                <span className="text-right font-semibold">{ord.deliveryPlace}</span>
+                <span className="text-[#6B4423]">보물 하역지(납품처):</span>
+                <span className="text-right font-bold">{ord.deliveryPlace}</span>
               </div>
             </div>
           </div>
 
-          <div className="border border-stone-300 rounded-lg overflow-hidden">
-            <div className="bg-stone-100 px-4 py-2 font-extrabold text-stone-800 border-b border-stone-300">
-              수주처 (공급자 / 키오스크 제조사)
+          <div className="border-2 border-[#C19A6B] bg-[#FAF0D7] rounded-xl overflow-hidden">
+            <div className="bg-[#E6CFA0] px-4 py-2 font-extrabold text-[#3B2313] border-b border-[#C19A6B]">
+              ⛵ 우리 해적단 (공급자 / 키오스크 제작단)
             </div>
             <div className="p-3.5 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-stone-500">상호(법인명):</span>
-                <strong className="text-stone-900">(주)스마트키오스크테크</strong>
+                <span className="text-[#6B4423]">상호(법인명):</span>
+                <strong className="text-[#3B2313]">(주)스마트키오스크 대항해단</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">사업자번호 / 대표자:</span>
-                <span className="font-mono">128-86-77401 / 김여원(Kevin)</span>
+                <span className="text-[#6B4423]">사업자번호 / 선장:</span>
+                <span className="font-mono font-bold">128-86-77401 / 캡틴 케빈(Kevin)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">수주 담당부서:</span>
-                <span>AI-SCM 자동발주팀 (031-612-8800)</span>
+                <span className="text-[#6B4423]">담당 부서:</span>
+                <span className="font-semibold">보물섬 SCM 원정대 (031-612-8800)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">납기 요청일:</span>
-                <strong className="font-mono text-teal-800">{ord.dueDate} 까지 입고</strong>
+                <span className="text-[#6B4423]">납기 요청일:</span>
+                <strong className="font-mono text-emerald-800">{ord.dueDate} 까지 도착</strong>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 주문 품목 상세 명세표 */}
         <div className="space-y-2">
-          <div className="text-sm font-extrabold text-stone-800">
-            1. 주문 품목 및 수량 명세
+          <div className="text-sm font-extrabold text-[#3B2313]">
+            1. 의뢰 유물(키오스크) 및 수량 명세
           </div>
-          <div className="overflow-x-auto border border-stone-400 rounded-lg">
+          <div className="overflow-x-auto border-2 border-[#8B5A2B] rounded-xl bg-white">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-stone-100 border-b border-stone-400 text-stone-700">
-                  <th className="py-2.5 px-3 font-bold">No</th>
-                  <th className="py-2.5 px-3 font-bold">모델코드</th>
-                  <th className="py-2.5 px-3 font-bold">품명 및 규격</th>
-                  <th className="py-2.5 px-3 text-right font-bold">주문서 원본수량</th>
-                  <th className="py-2.5 px-3 text-right font-bold">적용(확정)수량</th>
-                  <th className="py-2.5 px-3 text-right font-bold">개당 단가</th>
-                  <th className="py-2.5 px-3 text-right font-bold">공급가액</th>
+                <tr className="bg-[#E6CFA0] border-b-2 border-[#8B5A2B] text-[#3B2313]">
+                  <th className="py-2.5 px-3 font-extrabold">No</th>
+                  <th className="py-2.5 px-3 font-extrabold">모델코드</th>
+                  <th className="py-2.5 px-3 font-extrabold">유물명 및 규격</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">원본 표기수량</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">해독(확정)수량</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">개당 현상금(단가)</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">공급가액</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-stone-300">
-                  <td className="py-3 px-3 font-mono">1</td>
-                  <td className="py-3 px-3 font-mono font-bold text-teal-800">
+                <tr className="border-b border-[#C19A6B]">
+                  <td className="py-3 px-3 font-mono font-bold">1</td>
+                  <td className="py-3 px-3 font-mono font-extrabold text-amber-900">
                     {ord.modelId}
                   </td>
                   <td className="py-3 px-3 font-bold">
-                    {modelObj?.name || ord.modelId} (표준 BOM 풀세트)
+                    {modelObj?.name || ord.modelId} (황금 BOM 풀세트)
                   </td>
                   <td className="py-3 px-3 text-right font-mono font-bold">
                     {ord.rawQuantity !== ord.quantity ? (
-                      <span className="line-through text-rose-600">
+                      <span className="line-through text-red-600">
                         {ord.rawQuantity}대
                       </span>
                     ) : (
-                      <span className={!ord.confirmed ? 'text-amber-700 font-extrabold' : ''}>
+                      <span className={!ord.confirmed ? 'text-red-700 font-extrabold' : ''}>
                         {ord.rawQuantity}대
                       </span>
                     )}
                   </td>
-                  <td className="py-3 px-3 text-right font-mono text-base font-extrabold text-stone-900">
+                  <td className="py-3 px-3 text-right font-mono text-base font-extrabold text-[#3B2313]">
                     {ord.quantity}대
                   </td>
-                  <td className="py-3 px-3 text-right font-mono">
-                    ₩4,000,000
-                  </td>
                   <td className="py-3 px-3 text-right font-mono font-bold">
+                    400만 골드
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-extrabold">
                     {supplyAmount > 0 ? `₩${supplyAmount.toLocaleString()}` : '-'}
                   </td>
                 </tr>
               </tbody>
               <tfoot>
-                <tr className="bg-stone-50 font-bold text-stone-800">
+                <tr className="bg-[#FAF0D7] font-extrabold text-[#3B2313]">
                   <td colSpan={4} className="py-2.5 px-3">
-                    합계 금액 (공급가액 + 부가세 10%)
+                    총 보물 의뢰금 (공급가액 + 부가세 10%)
                   </td>
-                  <td colSpan={3} className="py-2.5 px-3 text-right font-mono text-base text-teal-900">
+                  <td colSpan={3} className="py-2.5 px-3 text-right font-mono text-base text-emerald-900">
                     {supplyAmount > 0
                       ? `₩${totalAmount.toLocaleString()} (VAT ₩${vatAmount.toLocaleString()} 포함)`
-                      : '수량 정정 필요'}
+                      : '선장님 암호 해독 필요!'}
                   </td>
                 </tr>
               </tfoot>
@@ -661,26 +684,25 @@ function App() {
           </div>
         </div>
 
-        {/* 주문서 원문 특이사항 / 비고 (오류 판단 핵심 근거!) */}
-        <div className="bg-amber-50/70 border border-amber-300 rounded-xl p-4 space-y-1.5">
-          <div className="text-xs font-extrabold text-amber-900 uppercase">
-            2. 바이어 주문서 원문 특이사항 / 비고란 (AI 대조 영역)
+        <div className="bg-amber-100/90 border-2 border-amber-600 rounded-xl p-4 space-y-1.5">
+          <div className="text-xs font-extrabold text-amber-950 uppercase flex items-center gap-1.5">
+            <Compass className="w-4 h-4" />
+            2. 양피지 의뢰서 비밀 메모 (선장님 암호 해독 단서!)
           </div>
-          <p className="text-base font-bold text-stone-900 leading-relaxed">
+          <p className="text-base font-extrabold text-[#3B2313] leading-relaxed">
             "{ord.docMemo}"
           </p>
           {!ord.confirmed && (
-            <p className="text-sm text-amber-800 font-semibold pt-1">
-              ⚠️ AI 판독 결과: 위 주문서 비고란의 실제 발주 대수와 표에 적힌 수량({ord.quantity}대)이 일치하지 않아 1차 사람 확인을 요청했습니다.
+            <p className="text-sm text-red-800 font-bold pt-1">
+              ☠️ 항해사 경고: 양피지 메모에 적힌 실제 수량과 표의 수량({ord.quantity}대)이 다릅니다! 숫자 함정을 해제해 주세요!
             </p>
           )}
         </div>
 
-        {/* 미확인 주문일 경우 문서 창 안에서 바로 정정 승인 가능 */}
         {!ord.confirmed && (
-          <div className="bg-stone-100 border border-stone-300 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-base font-bold text-stone-800">
-              주문서 원문 대조 후 수량 정정 승인:
+          <div className="bg-[#E6CFA0] border-2 border-[#8B5A2B] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-base font-extrabold text-[#3B2313]">
+              ⚔️ 선장님! 진짜 수량으로 함정을 해제하시겠습니까?
             </span>
             <div className="flex items-center gap-2">
               <input
@@ -696,15 +718,15 @@ function App() {
                     [ord.id]: e.target.value,
                   }))
                 }
-                className="w-24 bg-white border-2 border-amber-500 rounded-xl px-3 py-1.5 text-right font-mono text-lg font-extrabold"
+                className="w-24 bg-white border-2 border-[#8B5A2B] rounded-xl px-3 py-1.5 text-right font-mono text-lg font-extrabold"
               />
-              <span className="font-bold">대</span>
+              <span className="font-extrabold">대</span>
               <button
                 type="button"
                 onClick={() => handleConfirmOrder(ord.id)}
-                className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white font-extrabold cursor-pointer shadow"
               >
-                정정 수량으로 1차 사람 확인 승인
+                ⚔️ 함정 해제 & 선장 승인!
               </button>
             </div>
           </div>
@@ -717,45 +739,44 @@ function App() {
   const renderSupplierPoDocument = (po: SupplierPO) => {
     const vat = po.totalOrderCost * 0.1
     const grandTotal = po.totalOrderCost + vat
+    const island = ISLAND_META[po.supplierName]
 
     return (
-      <div className="bg-white border-2 border-stone-800 rounded-xl p-6 md:p-8 text-stone-900 space-y-6 shadow-sm">
-        {/* 상단 헤더 */}
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-stone-800 pb-5">
+      <div className="bg-[#FDF6E2] border-4 border-[#8B5A2B] rounded-2xl p-6 md:p-8 text-[#3B2313] space-y-6 shadow-xl">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-[#8B5A2B] pb-5">
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded bg-teal-800 text-white text-xs font-bold mb-1.5">
-              당사 발행 정식 부자재 발주서 (PURCHASE ORDER)
+            <span className="inline-block px-3 py-1 rounded-full bg-emerald-800 text-white text-xs font-extrabold mb-1.5">
+              🦅 보물섬 장인 길드행 정식 발주서 (PURCHASE ORDER)
             </span>
-            <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-stone-900">
-              부 자 재 구 매 발 주 서
+            <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#3B2313]">
+              {island?.emoji} 부 자 재 보 물 발 주 서
             </h3>
-            <p className="text-sm text-stone-600 mt-1">
+            <p className="text-sm text-[#6B4423] mt-1 font-semibold">
               발주번호: <strong className="font-mono">{po.poNo}</strong> · 발행일자:{' '}
-              <strong className="font-mono">2026-11-03</strong> · 입고요청 리드타임:{' '}
-              <strong>발주 후 {po.supplierInfo.leadTimeDays}일 이내</strong>
+              <strong className="font-mono">2026-11-03</strong> · 보물선 도착기한:{' '}
+              <strong>출항 후 {po.supplierInfo.leadTimeDays}일 이내</strong>
             </p>
           </div>
 
-          {/* 결재란 */}
-          <div className="border border-stone-400 text-center text-xs">
-            <div className="grid grid-cols-2 bg-stone-100 border-b border-stone-400 font-bold">
-              <div className="px-4 py-1 border-r border-stone-400">AI 자동산출</div>
-              <div className="px-4 py-1">구매담당자 확인</div>
+          <div className="border-2 border-[#8B5A2B] bg-[#F5E6C4] text-center text-xs rounded-lg overflow-hidden">
+            <div className="grid grid-cols-2 bg-[#E6CFA0] border-b border-[#8B5A2B] font-extrabold">
+              <div className="px-4 py-1 border-r border-[#8B5A2B]">항해사 산출</div>
+              <div className="px-4 py-1">캡틴(선장) 인장</div>
             </div>
             <div className="grid grid-cols-2 h-12 items-center">
-              <div className="px-3 border-r border-stone-400 h-full flex items-center justify-center">
-                <span className="border border-teal-700 text-teal-700 rounded px-1.5 py-0.5 text-[11px] font-bold">
-                  MRP검증필
+              <div className="px-3 border-r border-[#8B5A2B] h-full flex items-center justify-center">
+                <span className="border-2 border-emerald-800 text-emerald-800 rounded px-1.5 py-0.5 text-[11px] font-extrabold">
+                  보물탐지필
                 </span>
               </div>
               <div className="px-3 h-full flex items-center justify-center">
                 {po.humanConfirmed ? (
-                  <span className="border-2 border-rose-700 text-rose-700 rounded-full px-2 py-0.5 text-[11px] font-extrabold">
-                    김여원인
+                  <span className="border-2 border-red-700 bg-red-100 text-red-700 rounded-full px-2 py-0.5 text-[11px] font-extrabold">
+                    캡틴케빈인
                   </span>
                 ) : (
-                  <span className="text-amber-700 font-bold text-[11px]">
-                    미결 (확인대기)
+                  <span className="text-amber-800 font-extrabold text-[11px]">
+                    인장 대기중
                   </span>
                 )}
               </div>
@@ -763,92 +784,77 @@ function App() {
           </div>
         </div>
 
-        {/* 공급자(발주처) & 공급받는자(당사) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="border border-stone-300 rounded-lg overflow-hidden">
-            <div className="bg-stone-100 px-4 py-2 font-extrabold text-stone-800 border-b border-stone-300">
-              수신처 (공급자 / 부자재 발주처)
+          <div className="border-2 border-[#C19A6B] bg-[#FAF0D7] rounded-xl overflow-hidden">
+            <div className="bg-[#E6CFA0] px-4 py-2 font-extrabold text-[#3B2313] border-b border-[#C19A6B]">
+              🏝️ 목적지 보물섬 (공급자 / 장인 길드)
             </div>
             <div className="p-3.5 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-stone-500">상호(법인명):</span>
-                <strong className="text-stone-900">{po.supplierInfo.name} 귀하</strong>
+                <span className="text-[#6B4423]">길드(법인명):</span>
+                <strong className="text-[#3B2313]">{po.supplierInfo.name} 귀하</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">사업자번호 / 대표자:</span>
-                <span className="font-mono">
+                <span className="text-[#6B4423]">사업자번호 / 길드장:</span>
+                <span className="font-mono font-bold">
                   {po.supplierInfo.bizNo} / {po.supplierInfo.ceo}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">담당자 / 연락처:</span>
-                <span>
-                  {po.supplierInfo.contactName} ({po.supplierInfo.phone})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">수신 이메일:</span>
-                <strong className="font-mono text-teal-800">{po.supplierEmail}</strong>
+                <span className="text-[#6B4423]">연락책 / 전서구 주소:</span>
+                <strong className="font-mono text-emerald-900">{po.supplierEmail}</strong>
               </div>
             </div>
           </div>
 
-          <div className="border border-stone-300 rounded-lg overflow-hidden">
-            <div className="bg-stone-100 px-4 py-2 font-extrabold text-stone-800 border-b border-stone-300">
-              발주처 (공급받는자 / 당사)
+          <div className="border-2 border-[#C19A6B] bg-[#FAF0D7] rounded-xl overflow-hidden">
+            <div className="bg-[#E6CFA0] px-4 py-2 font-extrabold text-[#3B2313] border-b border-[#C19A6B]">
+              ⛵ 발주 원정대 (공급받는자 / 당사)
             </div>
             <div className="p-3.5 space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-stone-500">상호(법인명):</span>
-                <strong className="text-stone-900">(주)스마트키오스크테크</strong>
+                <span className="text-[#6B4423]">원정대명:</span>
+                <strong className="text-[#3B2313]">(주)스마트키오스크 대항해단</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">사업자번호 / 대표자:</span>
-                <span className="font-mono">128-86-77401 / 김여원(Kevin)</span>
+                <span className="text-[#6B4423]">총사령관(대표):</span>
+                <span className="font-mono font-bold">캡틴 케빈 (김여원)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">발주 담당자:</span>
-                <span>SCM 구매조달팀 (scm@smartkiosk.co.kr)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">입고 납품장소:</span>
-                <span className="font-semibold">경기도 평택시 진위산단로 88 제1공장 자재과</span>
+                <span className="text-[#6B4423]">보물 하역 항구:</span>
+                <span className="font-bold">평택 진위산단 제1전진기지 보물창고</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 발주 품목 상세 명세표 */}
         <div className="space-y-2">
-          <div className="text-sm font-extrabold text-stone-800">
-            1. 발주 부자재 품목 및 금액 명세
+          <div className="text-sm font-extrabold text-[#3B2313]">
+            1. 원정 발주 유물(부자재) 명세표
           </div>
-          <div className="overflow-x-auto border border-stone-400 rounded-lg">
+          <div className="overflow-x-auto border-2 border-[#8B5A2B] rounded-xl bg-white">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-stone-100 border-b border-stone-400 text-stone-700">
-                  <th className="py-2.5 px-3 font-bold">No</th>
-                  <th className="py-2.5 px-3 font-bold">품목코드</th>
-                  <th className="py-2.5 px-3 font-bold">부자재 품명 (구분)</th>
-                  <th className="py-2.5 px-3 text-right font-bold">총 소요량</th>
-                  <th className="py-2.5 px-3 text-right font-bold">현재재고</th>
-                  <th className="py-2.5 px-3 text-right font-bold">실제 발주수량</th>
-                  <th className="py-2.5 px-3 text-right font-bold">단가</th>
-                  <th className="py-2.5 px-3 text-right font-bold">공급가액</th>
+                <tr className="bg-[#E6CFA0] border-b-2 border-[#8B5A2B] text-[#3B2313]">
+                  <th className="py-2.5 px-3 font-extrabold">No</th>
+                  <th className="py-2.5 px-3 font-extrabold">유물코드</th>
+                  <th className="py-2.5 px-3 font-extrabold">부자재 보물명</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">총 필요량</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">창고보유</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">원정 발주수량</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">단가</th>
+                  <th className="py-2.5 px-3 text-right font-extrabold">공급가액</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-300">
+              <tbody className="divide-y divide-[#C19A6B]">
                 {po.items.map((item, i) => (
                   <tr key={item.materialId}>
-                    <td className="py-3 px-3 font-mono">{i + 1}</td>
-                    <td className="py-3 px-3 font-mono font-bold text-stone-700">
+                    <td className="py-3 px-3 font-mono font-bold">{i + 1}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-[#6B4423]">
                       {item.materialCode}
                     </td>
-                    <td className="py-3 px-3 font-bold">
-                      {item.materialName}{' '}
-                      <span className="text-xs font-normal text-stone-500">
-                        ({item.specType})
-                      </span>
+                    <td className="py-3 px-3 font-extrabold">
+                      {item.materialName}
                     </td>
                     <td className="py-3 px-3 text-right font-mono">
                       {item.requiredQty}개
@@ -856,25 +862,25 @@ function App() {
                     <td className="py-3 px-3 text-right font-mono text-stone-500">
                       {item.currentStock}개
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-base font-extrabold text-rose-700">
-                      {item.orderQty}개
+                    <td className="py-3 px-3 text-right font-mono text-base font-extrabold text-red-700">
+                      +{item.orderQty}개
                     </td>
                     <td className="py-3 px-3 text-right font-mono">
                       ₩{item.unitCost.toLocaleString()}
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold">
+                    <td className="py-3 px-3 text-right font-mono font-extrabold">
                       ₩{item.subTotalCost.toLocaleString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-stone-100 font-bold text-stone-900 border-t-2 border-stone-400">
+                <tr className="bg-[#FAF0D7] font-extrabold text-[#3B2313] border-t-2 border-[#8B5A2B]">
                   <td colSpan={5} className="py-3 px-3">
-                    총 발주 합계금액 (공급가액 ₩{po.totalOrderCost.toLocaleString()} + 부가세 ₩
+                    총 보물 발주 금화 (공급가액 ₩{po.totalOrderCost.toLocaleString()} + 세금 ₩
                     {vat.toLocaleString()})
                   </td>
-                  <td colSpan={3} className="py-3 px-3 text-right font-mono text-lg text-teal-900">
+                  <td colSpan={3} className="py-3 px-3 text-right font-mono text-lg text-emerald-900">
                     ₩{grandTotal.toLocaleString()}
                   </td>
                 </tr>
@@ -883,35 +889,17 @@ function App() {
           </div>
         </div>
 
-        {/* 산출 근거 (확정된 바이어 주문 내역) */}
-        <div className="bg-stone-50 border border-stone-300 rounded-xl p-4 space-y-1.5 text-sm">
-          <div className="font-extrabold text-stone-700">
-            2. 발주 산출 근거 (반영된 확정 바이어 주문 총 {confirmedOrders.length}건 / {totalConfirmedUnits}대)
-          </div>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {confirmedOrders.map((co) => (
-              <span
-                key={co.id}
-                className="px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-xs font-semibold text-stone-700"
-              >
-                {co.buyerName} ({co.modelId} · {co.quantity}대)
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* 문서 하단 2차 사람 확인 및 메일 발송 컨트롤 */}
-        <div className="bg-teal-50/70 border border-teal-200 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#E6CFA0] border-2 border-[#8B5A2B] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
           <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
             <input
               type="checkbox"
               disabled={po.mailSent}
               checked={po.humanConfirmed}
               onChange={() => togglePoConfirm(po.supplierName)}
-              className="w-5 h-5 accent-teal-800 rounded cursor-pointer"
+              className="w-5 h-5 accent-red-700 rounded cursor-pointer"
             />
-            <span className="text-base font-extrabold text-stone-900">
-              위 정식 발주서(PO)의 품목·수량·단가를 사람이 최종 확인하였습니다.
+            <span className="text-base font-extrabold text-[#3B2313]">
+              🧭 선장님(2차 사람 확인): 발주 두루마리의 수량과 금화를 확인하고 인장을 찍습니다!
             </span>
           </label>
 
@@ -919,16 +907,16 @@ function App() {
             type="button"
             disabled={!po.humanConfirmed || po.mailSent}
             onClick={() => handleSendMail(po.supplierName)}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold transition ${
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-extrabold transition ${
               po.mailSent
-                ? 'bg-teal-100 text-teal-800 cursor-default'
+                ? 'bg-emerald-800 text-white cursor-default'
                 : po.humanConfirmed
-                ? 'bg-teal-800 hover:bg-teal-900 text-white cursor-pointer shadow-sm'
-                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                ? 'bg-red-700 hover:bg-red-800 text-white cursor-pointer shadow-lg'
+                : 'bg-stone-400 text-stone-200 cursor-not-allowed'
             }`}
           >
             <Send className="w-4 h-4" />
-            {po.mailSent ? '발주서 메일 발송 완료됨' : '이 발주서로 메일 발송하기'}
+            {po.mailSent ? '🦅 전서구 출항 완료!' : '🦅 황금 전서구(발주 메일) 날리기!'}
           </button>
         </div>
       </div>
@@ -936,25 +924,25 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen pb-16">
-      {/* 상단 모던 내비게이션 바 */}
-      <header className="sticky top-0 z-30 bg-[#F6F5F0]/85 backdrop-blur-md border-b border-stone-200/90">
+    <div className="min-h-screen pb-20 text-[#3B2313]">
+      {/* 상단 해적선 조타실 헤더 */}
+      <header className="sticky top-0 z-30 bg-[#1B120C]/95 backdrop-blur-md border-b-4 border-[#B8860B] text-[#FDF6E2] shadow-xl">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-teal-800 text-white flex items-center justify-center shadow-sm">
-              <Cpu className="w-6 h-6" />
+          <div className="flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 text-[#1B120C] flex items-center justify-center shadow-lg border-2 border-amber-200 ship-float">
+              <Ship className="w-7 h-7" />
             </div>
             <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl md:text-2xl font-extrabold text-stone-900 tracking-tight">
-                  AI-SCM 키오스크 발주 관리
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-2xl md:text-3xl font-black text-amber-300 tracking-tight drop-shadow">
+                  🏴‍☠️ 보물섬 키오스크 대항해 발주 원정대
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200">
-                  이중 휴먼 컨펌
+                <span className="px-3 py-0.5 rounded-full text-xs font-extrabold bg-red-700 text-amber-100 border border-amber-400">
+                  선장님 2단 컨펌 퀘스트!
                 </span>
               </div>
-              <p className="text-sm text-stone-500">
-                바이어 주문서 원문 확인(1차 사람 확인) → 4종 모델 BOM·재고 대조 → 정식 발주서(PO) 확인 후 메일 발송(2차 사람 확인)
+              <p className="text-sm text-amber-100/80 mt-0.5">
+                [1단계] 유리병 주문서 함정 해독(선장 확인) ➔ [2단계] 400만 골드 유물 설계도 & 보물창고 탐색 ➔ [3단계] 4대 장인섬으로 전서구(발주서) 날리기!
               </p>
             </div>
           </div>
@@ -963,122 +951,131 @@ function App() {
             <button
               type="button"
               onClick={() => setShowDocArchiveModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-base font-bold transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#1B120C] text-base font-black transition cursor-pointer shadow-md border-2 border-amber-200"
             >
-              <FolderOpen className="w-4 h-4 text-amber-300" />
-              전체 주문서·발주서 문서 보관함
+              <FolderOpen className="w-5 h-5" />
+              🗺️ 선장님의 비밀 문서 보관함
             </button>
             <button
               type="button"
               onClick={() => setShowAddForm((v) => !v)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-base font-bold transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-base font-extrabold transition cursor-pointer border-2 border-emerald-400"
             >
               <Plus className="w-4 h-4" />
-              수기 주문 입력
+              의뢰서 직접 작성
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-stone-100 text-stone-700 border border-stone-200/90 text-base font-semibold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#2E1F14] hover:bg-[#3E2A1C] text-amber-200 border border-amber-700 text-base font-bold transition cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4 text-stone-500" />
-              초기화
+              <RotateCcw className="w-4 h-4" />
+              항해 초기화
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-7 space-y-9">
-        {/* 상단 핵심 요약 KPI 카드 4개 */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] flex items-start justify-between">
-            <div>
-              <span className="text-sm font-semibold text-stone-500">
-                1차 사람 확인 대기 주문서
-              </span>
-              <div className="text-3xl font-extrabold text-amber-700 mt-1">
-                {pendingOrdersCount}건
-              </div>
-              <span className="text-sm text-stone-500 mt-1 block">
-                주문서 원문 비고 대조 필요
-              </span>
+      <main className="max-w-7xl mx-auto px-6 pt-8 space-y-10">
+        {/* 보물지도 항해 루트 트래커 배너 */}
+        <section className="bg-gradient-to-r from-[#F3E2B8] via-[#FAF0D7] to-[#F3E2B8] border-4 border-[#8B5A2B] rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-5 border-b-2 border-dashed border-[#8B5A2B]/50 pb-4">
+            <div className="flex items-center gap-2.5">
+              <Compass className="w-7 h-7 text-red-700 animate-spin" style={{ animationDuration: '12s' }} />
+              <h2 className="text-xl md:text-2xl font-black text-[#3B2313]">
+                🗺️ 그랜드 라인 부자재 보물섬 항해 지도 (Adventure Map)
+              </h2>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-700">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
+            <span className="px-3.5 py-1 rounded-full bg-[#3B2313] text-amber-300 text-sm font-extrabold">
+              🪙 키오스크 유물 1대당 현상금: 400만 골드 (공통 파츠 225만 + 전용 파츠 175만)
+            </span>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] flex items-start justify-between">
-            <div>
-              <span className="text-sm font-semibold text-stone-500">
-                확정된 키오스크 수주량
-              </span>
-              <div className="text-3xl font-extrabold text-stone-900 mt-1">
-                {totalConfirmedUnits}대
-              </div>
-              <span className="text-sm text-teal-700 font-semibold mt-1 block">
-                총 {formatCurrency(totalConfirmedUnits * 4000000)} (개당 400만)
-              </span>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-200/70 flex items-center justify-center text-teal-700">
-              <ClipboardList className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] flex items-start justify-between">
-            <div>
-              <span className="text-sm font-semibold text-stone-500">
-                재고 부족 부자재 품목
-              </span>
-              <div className="text-3xl font-extrabold text-rose-700 mt-1">
-                {shortageMaterialsCount}종
-              </div>
-              <span className="text-sm text-stone-500 mt-1 block">
-                전체 {materials.length}종 부자재 중 발주 필요
-              </span>
-            </div>
-            <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-rose-700">
-              <Package className="w-5 h-5" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] flex items-start justify-between">
-            <div>
-              <span className="text-sm font-semibold text-stone-500">
-                2차 발주서(PO) 메일 발송
-              </span>
-              <div className="text-3xl font-extrabold text-stone-900 mt-1">
-                {sentPoCount}{' '}
-                <span className="text-xl font-semibold text-stone-400">
-                  / {supplierPOs.length}곳
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
+            {/* 제1항구 */}
+            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md relative">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-lg bg-red-700 text-white text-xs font-black">
+                  제1항구 · 유리병 해변
                 </span>
+                <Skull className="w-5 h-5 text-red-700" />
               </div>
-              <span className="text-sm text-stone-500 mt-1 block">
-                발주서 문서 확인 후 발송
-              </span>
+              <div className="text-2xl font-black text-red-700 mt-2">
+                함정 의뢰서 {pendingOrdersCount}건
+              </div>
+              <p className="text-sm font-bold text-[#6B4423] mt-1">
+                {pendingOrdersCount > 0
+                  ? '🧭 선장님! 이상한 수량 함정을 해독하세요!'
+                  : '✨ 모든 의뢰서 암호 해독 완료!'}
+              </p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700">
-              <Mail className="w-5 h-5" />
+
+            {/* 제2항구 */}
+            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-lg bg-amber-700 text-white text-xs font-black">
+                  제2관문 · 황금 골렘 신전
+                </span>
+                <Crown className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="text-2xl font-black text-[#3B2313] mt-2">
+                목표 제작 {totalConfirmedUnits}대
+              </div>
+              <p className="text-sm font-bold text-emerald-800 mt-1">
+                총 현상금 {formatCurrency(totalConfirmedUnits * 4000000)}
+              </p>
+            </div>
+
+            {/* 제3항구 */}
+            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-lg bg-teal-800 text-white text-xs font-black">
+                  제3관문 · 선박 보물창고
+                </span>
+                <Gem className="w-5 h-5 text-teal-700" />
+              </div>
+              <div className="text-2xl font-black text-rose-700 mt-2">
+                부족한 보물 {shortageMaterialsCount}종
+              </div>
+              <p className="text-sm font-bold text-[#6B4423] mt-1">
+                보물섬에서 캐와야 할 부자재 파츠!
+              </p>
+            </div>
+
+            {/* 제4항구 */}
+            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
+              <div className="flex items-center justify-between">
+                <span className="px-2.5 py-0.5 rounded-lg bg-emerald-800 text-white text-xs font-black">
+                  최종 목적지 · 4대 장인섬
+                </span>
+                <Trophy className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="text-2xl font-black text-emerald-900 mt-2">
+                전서구 출항 {sentPoCount} / {supplierPOs.length}섬
+              </div>
+              <p className="text-sm font-bold text-[#6B4423] mt-1">
+                선장님 인장 날인 후 전서구 발송!
+              </p>
             </div>
           </div>
         </section>
 
-        {/* 바이어 주문서 드래그 앤 드롭 업로드 존 */}
-        <section className="bg-white rounded-3xl border border-stone-200/90 p-6 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] space-y-5">
+        {/* 🍾 바이어 유리병 주문서 드래그 앤 드롭 갑판 */}
+        <section className="bg-[#FAF0D7] rounded-3xl border-4 border-[#8B5A2B] p-6 shadow-2xl space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-xl font-extrabold text-stone-900 flex items-center gap-2">
-                <UploadCloud className="w-6 h-6 text-teal-700" />
-                바이어 주문서 드래그 앤 드롭 접수
+              <h2 className="text-2xl font-black text-[#3B2313] flex items-center gap-2.5">
+                <Anchor className="w-7 h-7 text-amber-700" />
+                🍾 바다에서 떠내려온 바이어 유리병 주문서 건지기 (드래그 앤 드롭)
               </h2>
-              <p className="text-base text-stone-500 mt-0.5">
-                바이어에게 받은 주문서 파일(PDF·엑셀)을 아래 점선 영역에 끌어다 놓거나, 우측의 <strong>샘플 주문서 파일 카드를 마우스로 드래그해서</strong> 놓아보세요.
+              <p className="text-base font-bold text-[#6B4423] mt-1">
+                내 PC의 주문서 파일을 갑판에 던져 넣거나, 우측의 <strong>유리병 편지 4종을 마우스로 끌어서 왼쪽 갑판에 투하</strong>해 보세요!
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* 좌측: 드롭존 (7칸) */}
+            {/* 좌측: 갑판 드롭존 (7칸) */}
             <div
               onDragOver={(e) => {
                 e.preventDefault()
@@ -1087,10 +1084,10 @@ function App() {
               onDragLeave={() => setIsDraggingOver(false)}
               onDrop={handleDropZoneDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`lg:col-span-7 rounded-2xl border-2 border-dashed p-7 flex flex-col items-center justify-center text-center transition cursor-pointer ${
+              className={`lg:col-span-7 rounded-2xl border-4 border-dashed p-7 flex flex-col items-center justify-center text-center transition cursor-pointer ${
                 isDraggingOver
-                  ? 'border-teal-700 bg-teal-50/70 scale-[1.01]'
-                  : 'border-stone-300 bg-[#FAF9F5] hover:border-teal-700/60 hover:bg-stone-100/60'
+                  ? 'border-red-700 bg-amber-200/80 scale-[1.01]'
+                  : 'border-[#8B5A2B] bg-[#F3E2B8] hover:bg-[#EAD29C]'
               }`}
             >
               <input
@@ -1106,34 +1103,28 @@ function App() {
                 }}
                 className="hidden"
               />
-              <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition ${
-                  isDraggingOver
-                    ? 'bg-teal-700 text-white'
-                    : 'bg-white border border-stone-200 text-teal-800 shadow-xs'
-                }`}
-              >
-                <UploadCloud className="w-7 h-7" />
+              <div className="w-16 h-16 rounded-full bg-[#3B2313] text-amber-300 border-4 border-amber-400 flex items-center justify-center mb-3 shadow-lg">
+                <UploadCloud className="w-8 h-8" />
               </div>
-              <p className="text-lg font-extrabold text-stone-900">
+              <p className="text-xl font-black text-[#3B2313]">
                 {isDraggingOver
-                  ? '여기에 주문서 파일을 놓아주세요!'
-                  : '바이어 주문서 파일을 이곳에 드래그하거나 클릭하여 업로드'}
+                  ? '⚓ 갑판 위에 유리병 주문서를 내려놓으세요!'
+                  : '🍾 여기에 유리병 주문서(파일)를 끌어다 놓거나 클릭하여 건져 올리세요!'}
               </p>
-              <p className="text-sm text-stone-500 mt-1">
-                지원 형식: PDF, Excel (.xlsx, .csv) · 업로드 즉시 주문서 원문 문서를 생성하고 이상 수량을 검증합니다
+              <p className="text-sm font-bold text-[#6B4423] mt-1">
+                유리병을 여는 즉시 의뢰 왕국(업체명), 유물 모델, 수량, 납기를 해독하고 함정 숫자를 찾아냅니다!
               </p>
             </div>
 
-            {/* 우측: 마우스로 끌어서 테스트할 수 있는 샘플 주문서 파일 4종 (5칸) */}
-            <div className="lg:col-span-5 bg-[#FAF9F5] border border-stone-200/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+            {/* 우측: 마우스로 끌어서 테스트할 수 있는 유리병 주문서 4종 (5칸) */}
+            <div className="lg:col-span-5 bg-[#EED9A8] border-2 border-[#8B5A2B] rounded-2xl p-4 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-extrabold text-stone-700">
-                  💡 테스트용 가상 주문서 파일 (끌어서 왼쪽에 놓거나 클릭)
+                <span className="text-base font-black text-[#3B2313]">
+                  🧭 파도에 밀려온 유리병 편지 (끌어서 왼쪽에 놓거나 클릭!)
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {SAMPLE_DRAGGABLE_FILES.map((sample) => {
                   const isErr = sample.quantity < 5 || sample.quantity > 200
                   return (
@@ -1158,29 +1149,29 @@ function App() {
                           sourceLabel: sample.fileName,
                         })
                       }
-                      className="group bg-white hover:bg-teal-50/40 border border-stone-200/90 hover:border-teal-700/50 rounded-xl p-3 flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing transition shadow-[0_1px_6px_rgba(0,0,0,0.02)]"
+                      className="group bg-[#FFF9EA] hover:bg-white border-2 border-[#8B5A2B] rounded-xl p-3 flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing transition shadow-sm"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <GripVertical className="w-4 h-4 text-stone-400 shrink-0 group-hover:text-teal-700" />
+                        <GripVertical className="w-5 h-5 text-[#8B5A2B] shrink-0" />
                         {sample.fileType === 'PDF' ? (
-                          <FileText className="w-5 h-5 text-rose-600 shrink-0" />
+                          <FileText className="w-5 h-5 text-red-700 shrink-0" />
                         ) : (
-                          <FileSpreadsheet className="w-5 h-5 text-emerald-700 shrink-0" />
+                          <FileSpreadsheet className="w-5 h-5 text-emerald-800 shrink-0" />
                         )}
                         <div className="truncate">
-                          <div className="text-sm font-bold text-stone-900 truncate">
+                          <div className="text-sm font-black text-[#3B2313] truncate">
                             {sample.fileName}
                           </div>
-                          <div className="text-xs text-stone-500">
-                            {sample.buyerName} · {sample.modelId} · 납기 {sample.dueDate}
+                          <div className="text-xs font-bold text-[#6B4423]">
+                            {sample.buyerName} · {sample.modelId} · 기한 {sample.dueDate}
                           </div>
                         </div>
                       </div>
                       <span
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-black shrink-0 border ${
                           isErr
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-teal-50 text-teal-800'
+                            ? 'bg-red-100 text-red-800 border-red-400'
+                            : 'bg-emerald-100 text-emerald-900 border-emerald-400'
                         }`}
                       >
                         {sample.badgeText}
@@ -1192,14 +1183,13 @@ function App() {
             </div>
           </div>
 
-          {/* 업로드 완료 피드백 배너 */}
           {uploadNotice && (
-            <div className="bg-teal-900 text-white px-5 py-3.5 rounded-2xl text-base font-bold flex items-center justify-between shadow-sm">
+            <div className="bg-[#3B2313] text-amber-300 border-2 border-amber-400 px-5 py-3.5 rounded-2xl text-base font-black flex items-center justify-between shadow-lg">
               <span>{uploadNotice}</span>
               <button
                 type="button"
                 onClick={() => setUploadNotice(null)}
-                className="text-teal-200 hover:text-white text-sm ml-4 cursor-pointer"
+                className="text-amber-100 hover:text-white text-sm ml-4 cursor-pointer"
               >
                 닫기 ✕
               </button>
@@ -1211,30 +1201,30 @@ function App() {
         {showAddForm && (
           <form
             onSubmit={handleAddOrder}
-            className="bg-white border-2 border-teal-700/30 rounded-2xl p-6 shadow-md space-y-4"
+            className="bg-[#FAF0D7] border-4 border-[#8B5A2B] rounded-2xl p-6 shadow-xl space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-teal-700" />
-                바이어 주문서 수기 입력 등록
+              <h3 className="text-lg font-black text-[#3B2313] flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-700" />
+                📜 새로운 왕국 의뢰서 직접 작성하기
               </h3>
-              <span className="text-sm text-stone-500">
-                수량에 1~4(과소), 201 이상(과다), 음수를 입력하면 1차 사람 확인 대상으로 분류됩니다.
+              <span className="text-sm font-bold text-[#6B4423]">
+                수량에 1~4(과소), 201 이상(과다), 음수를 입력하면 함정 의뢰서로 발동됩니다!
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <input
                 type="text"
                 required
-                placeholder="바이어 업체명 (예: 투썸플레이스)"
+                placeholder="의뢰 왕국명 (예: 투썸플레이스)"
                 value={newBuyer}
                 onChange={(e) => setNewBuyer(e.target.value)}
-                className="bg-stone-50 border border-stone-300 rounded-xl px-4 py-2.5 text-base text-stone-900 focus:outline-none focus:border-teal-700"
+                className="bg-white border-2 border-[#8B5A2B] rounded-xl px-4 py-2.5 text-base font-bold text-[#3B2313]"
               />
               <select
                 value={newModel}
                 onChange={(e) => setNewModel(e.target.value as KioskModelId)}
-                className="bg-stone-50 border border-stone-300 rounded-xl px-4 py-2.5 text-base text-stone-900 focus:outline-none focus:border-teal-700"
+                className="bg-white border-2 border-[#8B5A2B] rounded-xl px-4 py-2.5 text-base font-bold text-[#3B2313]"
               >
                 {KIOSK_MODELS.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -1245,47 +1235,44 @@ function App() {
               <input
                 type="number"
                 required
-                placeholder="수량 입력 (예: 2 또는 999)"
+                placeholder="수량 (예: 2 또는 999)"
                 value={newQty}
                 onChange={(e) => setNewQty(e.target.value)}
-                className="bg-stone-50 border border-stone-300 rounded-xl px-4 py-2.5 text-base text-stone-900 focus:outline-none focus:border-teal-700"
+                className="bg-white border-2 border-[#8B5A2B] rounded-xl px-4 py-2.5 text-base font-bold text-[#3B2313]"
               />
               <input
                 type="date"
                 value={newDue}
                 onChange={(e) => setNewDue(e.target.value)}
-                className="bg-stone-50 border border-stone-300 rounded-xl px-4 py-2.5 text-base text-stone-900 focus:outline-none focus:border-teal-700"
+                className="bg-white border-2 border-[#8B5A2B] rounded-xl px-4 py-2.5 text-base font-bold text-[#3B2313]"
               />
               <button
                 type="submit"
-                className="bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl px-5 py-2.5 text-base transition cursor-pointer"
+                className="bg-red-700 hover:bg-red-800 text-white font-black rounded-xl px-5 py-2.5 text-base transition cursor-pointer shadow"
               >
-                주문 접수하기
+                의뢰서 등록!
               </button>
             </div>
           </form>
         )}
 
-        {/* STEP 1. 바이어 주문서 접수 및 1차 사람 확인 */}
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-end justify-between gap-2">
+        {/* 🏝️ 제1관문: 바이어 주문서 함정 해독 & 1차 선장님 확인 */}
+        <section className="bg-[#FAF0D7] border-4 border-[#8B5A2B] rounded-3xl p-6 shadow-2xl space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-2 border-b-2 border-[#8B5A2B]/40 pb-4">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-bold text-teal-800 uppercase tracking-wide">
-                <span className="w-6 h-6 rounded-lg bg-teal-800 text-white flex items-center justify-center text-xs">
-                  1
-                </span>
-                Step 1 · Buyer Order Documents & Human Check
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-700 text-amber-200 text-xs font-black uppercase">
+                🏝️ Quest 1 · 선장님의 1차 암호 해독 (Human-in-the-Loop #1)
               </div>
-              <h2 className="text-2xl font-extrabold text-stone-900 mt-1">
-                접수된 바이어 주문서 확인 및 이상 수량 승인 ({orders.length}건)
+              <h2 className="text-2xl md:text-3xl font-black text-[#3B2313] mt-1.5">
+                바이어 의뢰서 숫자 함정 해제 & 선장 승인 ({orders.length}건)
               </h2>
             </div>
-            <p className="text-base text-stone-600">
-              각 주문의 <strong>[📄 바이어 주문서 원문 보기]</strong>를 눌러 실제 주문서 문서와 비고를 확인할 수 있습니다.
+            <p className="text-base font-bold text-[#6B4423]">
+              <strong>[📜 양피지 주문서 원문 보기]</strong>로 비밀 메모를 읽고, 잘못된 수량 함정을 진짜 수량으로 고쳐 승인하세요!
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {orders.map((ord) => {
               const modelObj = KIOSK_MODELS.find((m) => m.id === ord.modelId)
               const isPending = !ord.confirmed
@@ -1293,68 +1280,71 @@ function App() {
               return (
                 <div
                   key={ord.id}
-                  className={`rounded-2xl p-5 transition border ${
+                  className={`rounded-2xl p-5 transition border-3 ${
                     isPending
-                      ? 'bg-[#FFFDF9] border-amber-300/90 shadow-[0_4px_20px_-4px_rgba(180,83,9,0.08)]'
-                      : 'bg-white border-stone-200/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)]'
+                      ? 'bg-[#FFF3D6] border-red-600 shadow-lg'
+                      : 'bg-[#FFFDF7] border-[#C19A6B]'
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    {/* 좌측: 주문 기본 정보 */}
+                    {/* 좌측: 의뢰 정보 */}
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="font-mono text-sm font-bold text-stone-400">
-                          {ord.id} ({ord.docNo})
+                        <span className="px-2.5 py-0.5 rounded-md bg-[#3B2313] text-amber-300 font-mono text-sm font-black">
+                          {ord.id}
                         </span>
-                        <h3 className="text-xl font-extrabold text-stone-900">
-                          {ord.buyerName}
+                        <h3 className="text-xl font-black text-[#3B2313]">
+                          🏰 {ord.buyerName}
                         </h3>
-                        <span className="px-3 py-1 rounded-lg bg-stone-100 text-stone-800 font-semibold text-sm border border-stone-200/80">
+                        <span className="px-3 py-1 rounded-lg bg-[#E6CFA0] text-[#3B2313] font-extrabold text-sm border border-[#8B5A2B]">
                           {ord.modelId} · {modelObj?.name}
                         </span>
-                        <span className="text-sm text-stone-500 font-medium">
-                          납기일: <strong className="text-stone-700">{ord.dueDate}</strong>
+                        <span className="text-sm text-[#6B4423] font-bold">
+                          기한: <strong className="text-[#3B2313]">{ord.dueDate}</strong>
                         </span>
                         <button
                           type="button"
                           onClick={() => setViewingBuyerOrderId(ord.id)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-sm font-bold transition cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#3B2313] border-2 border-[#8B5A2B] text-sm font-black transition cursor-pointer shadow-xs"
                         >
-                          <FileText className="w-4 h-4" />
-                          바이어 주문서 원문 보기
+                          <ScrollText className="w-4 h-4" />
+                          📜 양피지 주문서 원문 보기
                         </button>
                       </div>
 
-                      {/* 주문서 원문 비고 미리보기 */}
-                      <div className="text-sm text-stone-600 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200/70">
-                        <strong className="text-stone-700">주문서 원문 비고:</strong> "{ord.docMemo}"
+                      {/* 원문 비밀 메모 */}
+                      <div className="text-sm font-bold text-[#5A381E] bg-[#F3E2B8] px-3.5 py-2 rounded-xl border border-[#C19A6B]">
+                        🧭 <strong>양피지 원문 단서:</strong> "{ord.docMemo}"
                       </div>
 
-                      {/* 상태 메시지 */}
+                      {/* 함정 상태 vs 해독 완료 */}
                       {isPending ? (
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-base font-semibold">
-                          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-100 border-2 border-red-500 text-red-900 text-base font-black">
+                          <Skull className="w-5 h-5 text-red-700 shrink-0" />
                           <span>
-                            원본 수량 <strong className="underline">{ord.quantity}대</strong> 감지 — {ord.errorMsg}
+                            함정 숫자 <strong className="underline">{ord.quantity}대</strong> 발동! — {ord.errorMsg}
                           </span>
                         </div>
                       ) : (
-                        <div className="inline-flex items-center gap-2 text-teal-800 text-base font-semibold">
-                          <CheckCircle2 className="w-5 h-5 text-teal-600" />
+                        <div className="inline-flex items-center gap-2 text-emerald-900 text-base font-black">
+                          <Trophy className="w-5 h-5 text-amber-600" />
                           <span>
-                            수량 검증 완료 · 주문 금액{' '}
-                            <strong>{formatCurrency(ord.quantity * 4000000)}</strong> (단가 400만 원 × {ord.quantity}대)
+                            선장 해독 완료! · 획득 예상 금화{' '}
+                            <strong className="underline">
+                              {formatCurrency(ord.quantity * 4000000)}
+                            </strong>{' '}
+                            (400만 골드 × {ord.quantity}대)
                           </span>
                         </div>
                       )}
                     </div>
 
-                    {/* 우측: 수량 수정 및 사람 확인 액션 */}
+                    {/* 우측: 함정 해제 컨트롤 */}
                     <div className="flex items-center gap-3 shrink-0">
                       {isPending ? (
-                        <div className="flex flex-wrap items-center gap-2.5 bg-amber-50/70 p-2.5 rounded-xl border border-amber-200/80">
-                          <span className="text-sm font-bold text-amber-900 pl-1">
-                            정정 수량:
+                        <div className="flex flex-wrap items-center gap-2.5 bg-[#F5E0B5] p-3 rounded-2xl border-2 border-red-600">
+                          <span className="text-sm font-black text-red-900 pl-1">
+                            해독 수량:
                           </span>
                           <div className="relative flex items-center">
                             <input
@@ -1370,33 +1360,33 @@ function App() {
                                   [ord.id]: e.target.value,
                                 }))
                               }
-                              className="w-24 bg-white border-2 border-amber-400 rounded-xl px-3 py-1.5 text-right font-mono text-lg font-extrabold text-stone-900 focus:outline-none focus:border-amber-600"
+                              className="w-24 bg-white border-2 border-[#8B5A2B] rounded-xl px-3 py-1.5 text-right font-mono text-lg font-black text-[#3B2313]"
                             />
-                            <span className="ml-1.5 mr-1 text-base font-bold text-stone-700">
+                            <span className="ml-1.5 mr-1 text-base font-black text-[#3B2313]">
                               대
                             </span>
                           </div>
                           <button
                             type="button"
                             onClick={() => handleConfirmOrder(ord.id)}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-base font-bold transition cursor-pointer shadow-xs"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-white text-base font-black transition cursor-pointer shadow-md border border-amber-300"
                           >
-                            <UserCheck className="w-5 h-5" />
-                            사람 확인 승인
+                            <Swords className="w-5 h-5" />
+                            함정 해제 & 선장 승인!
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 bg-emerald-100 border-2 border-emerald-700 px-4 py-2.5 rounded-2xl">
                           <div className="text-right">
-                            <span className="text-xs text-stone-400 block font-semibold">
-                              확정 수량
+                            <span className="text-xs text-emerald-800 block font-extrabold">
+                              확정 유물 수량
                             </span>
-                            <span className="text-2xl font-extrabold text-stone-900 font-mono">
+                            <span className="text-2xl font-black text-emerald-950 font-mono">
                               {ord.quantity}대
                             </span>
                           </div>
-                          <span className="px-3.5 py-2 rounded-xl bg-stone-100 text-stone-600 text-sm font-bold">
-                            승인 완료
+                          <span className="px-3 py-1.5 rounded-xl bg-emerald-800 text-amber-200 text-xs font-black">
+                            🪙 해독완료
                           </span>
                         </div>
                       )}
@@ -1408,26 +1398,23 @@ function App() {
           </div>
         </section>
 
-        {/* STEP 2. 키오스크 4종 모델 (개당 400만 원) & 부자재 재고 대조 */}
-        <section className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-2">
+        {/* 🏛️ 제2관문 & 제3관문: 4대 키오스크 골렘 설계도(400만 골드) & 선박 보물창고 탐색 */}
+        <section className="bg-[#FAF0D7] border-4 border-[#8B5A2B] rounded-3xl p-6 shadow-2xl space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-2 border-b-2 border-[#8B5A2B]/40 pb-4">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-bold text-teal-800 uppercase tracking-wide">
-                <span className="w-6 h-6 rounded-lg bg-teal-800 text-white flex items-center justify-center text-xs">
-                  2
-                </span>
-                Step 2 · BOM & Inventory Check
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-700 text-white text-xs font-black uppercase">
+                🏛️ Quest 2 & 3 · 고대 유물 BOM 조합표 & 선박 보물창고 점검
               </div>
-              <h2 className="text-2xl font-extrabold text-stone-900 mt-1">
-                4종 모델 BOM 단가 구성 (개당 400만 원) 및 부자재 재고 현황
+              <h2 className="text-2xl md:text-3xl font-black text-[#3B2313] mt-1.5">
+                전설의 4대 키오스크 설계도 (개당 400만 골드) & 부족한 보물 파츠 탐색
               </h2>
             </div>
-            <p className="text-base text-stone-600">
-              공통 부자재 4종은 <strong>동일 단가(합계 225만 원)</strong>, 크기·규격이 다른 부자재 2종에서 단가를 맞춰 <strong>모든 모델이 400만 원</strong>입니다.
+            <p className="text-base font-bold text-[#6B4423]">
+              공통 유물 4종(<strong>225만 골드 동일</strong>) + 규격별 유물 2종(<strong>175만 골드</strong>) = <strong>모든 모델 400만 골드!</strong>
             </p>
           </div>
 
-          {/* 4개 모델 모던 카드 그리드 */}
+          {/* 4개 모델 보물 설계도 카드 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {KIOSK_MODELS.map((model) => {
               const confirmedSum = orders
@@ -1441,54 +1428,49 @@ function App() {
                   onClick={() =>
                     setSelectedModelTab(isSelected ? 'ALL' : model.id)
                   }
-                  className={`bg-white rounded-2xl p-5 border transition cursor-pointer flex flex-col justify-between ${
+                  className={`bg-[#FFFDF7] rounded-2xl p-5 border-3 transition cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'border-teal-700 ring-2 ring-teal-700/20 shadow-md'
-                      : 'border-stone-200/90 hover:border-stone-300 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)]'
+                      ? 'border-red-700 ring-4 ring-amber-400/50 shadow-xl'
+                      : 'border-[#8B5A2B] hover:border-red-700 shadow-md'
                   }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="px-3 py-1 rounded-lg bg-stone-100 text-stone-800 font-mono font-extrabold text-sm">
-                        {model.id}
+                      <span className="px-3 py-1 rounded-lg bg-[#3B2313] text-amber-300 font-mono font-black text-sm">
+                        🗿 {model.id}
                       </span>
-                      <span className="text-base font-extrabold text-teal-800">
-                        단가 400만 원
+                      <span className="text-base font-black text-amber-800">
+                        🪙 400만 골드
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-extrabold text-stone-900">
+                      <h3 className="text-lg font-black text-[#3B2313]">
                         {model.name}
                       </h3>
-                      <p className="text-sm font-semibold text-stone-500 mt-0.5">
-                        현재 확정 주문:{' '}
-                        <strong className="text-teal-700">{confirmedSum}대</strong>
+                      <p className="text-sm font-extrabold text-emerald-800 mt-0.5">
+                        의뢰 확정 수량: <strong>{confirmedSum}대</strong>
                       </p>
                     </div>
 
-                    {/* 단가 비율 바 (공통 225만 + 규격 175만 = 400만) */}
                     <div className="space-y-1.5 pt-1">
-                      <div className="h-2.5 w-full rounded-full bg-stone-100 overflow-hidden flex">
+                      <div className="h-3 w-full rounded-full bg-[#E6CFA0] overflow-hidden flex border border-[#8B5A2B]">
                         <div
-                          className="bg-stone-600 h-full"
+                          className="bg-[#6B4423] h-full"
                           style={{ width: '56.25%' }}
-                          title="공통 부자재 225만 원"
                         />
                         <div
-                          className="bg-teal-600 h-full"
+                          className="bg-amber-500 h-full"
                           style={{ width: '43.75%' }}
-                          title="규격별 부자재 175만 원"
                         />
                       </div>
-                      <div className="flex justify-between text-xs font-semibold text-stone-500">
-                        <span>● 공통 4종: 225만</span>
-                        <span className="text-teal-800">● 규격별 2종: 175만</span>
+                      <div className="flex justify-between text-xs font-extrabold text-[#6B4423]">
+                        <span>● 공통파츠: 225만</span>
+                        <span className="text-amber-900">★ 전용파츠: 175만</span>
                       </div>
                     </div>
 
-                    {/* 해당 모델의 BOM 리스트 */}
-                    <div className="pt-2 border-t border-stone-100 space-y-1.5 text-sm">
+                    <div className="pt-2 border-t border-[#C19A6B] space-y-1.5 text-sm">
                       {model.bom.map((b) => {
                         const mat = materials.find((m) => m.id === b.materialId)
                         if (!mat) return null
@@ -1501,14 +1483,14 @@ function App() {
                             <span
                               className={`truncate ${
                                 isCommon
-                                  ? 'text-stone-600'
-                                  : 'text-teal-900 font-bold'
+                                  ? 'text-[#6B4423] font-semibold'
+                                  : 'text-red-800 font-black'
                               }`}
                             >
-                              {isCommon ? '· ' : '★ '}
+                              {isCommon ? '⚙️ ' : '💎 '}
                               {mat.name.replace(' (공용)', '')}
                             </span>
-                            <span className="font-mono font-bold text-stone-800 shrink-0 ml-2">
+                            <span className="font-mono font-black text-[#3B2313] shrink-0 ml-2">
                               {(mat.unitCost / 10000).toLocaleString()}만
                             </span>
                           </div>
@@ -1521,35 +1503,35 @@ function App() {
             })}
           </div>
 
-          {/* 부자재 재고 및 부족 수량 모던 카드 테이블 */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] overflow-hidden">
-            <div className="px-6 py-4 bg-stone-50/80 border-b border-stone-200/80 flex flex-wrap items-center justify-between gap-2">
+          {/* 선박 보물창고 재고 & 원정 채집 필요 수량 표 */}
+          <div className="bg-[#FFFDF7] rounded-2xl border-3 border-[#8B5A2B] overflow-hidden shadow-lg">
+            <div className="px-6 py-4 bg-[#E6CFA0] border-b-2 border-[#8B5A2B] flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-teal-800" />
-                <h3 className="text-lg font-extrabold text-stone-900">
-                  부자재별 실시간 재고 대조 및 발주 필요 수량
+                <Gem className="w-6 h-6 text-red-700" />
+                <h3 className="text-lg font-black text-[#3B2313]">
+                  🗝️ 우리 배의 보물창고(현재 재고) 대조 및 원정 채집(발주) 목표량
                 </h3>
               </div>
-              <span className="text-sm text-stone-500">
-                총 필요 수량 대비 창고 재고가 부족한 품목은 자동으로 발주서에 담깁니다.
+              <span className="text-sm font-extrabold text-[#5A381E]">
+                창고에 부족한 파츠는 아래 4대 장인 보물섬 원정 발주서에 자동으로 기록됩니다!
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-base">
                 <thead>
-                  <tr className="border-b border-stone-200 text-stone-500 text-sm bg-stone-50/40">
-                    <th className="py-3.5 px-5 font-bold">구분</th>
-                    <th className="py-3.5 px-5 font-bold">부자재 품명</th>
-                    <th className="py-3.5 px-5 font-bold">발주처</th>
-                    <th className="py-3.5 px-5 text-right font-bold">개당 단가</th>
-                    <th className="py-3.5 px-5 text-right font-bold">총 필요수량</th>
-                    <th className="py-3.5 px-5 text-right font-bold">현재 창고재고</th>
-                    <th className="py-3.5 px-5 font-bold w-44">재고 충당률</th>
-                    <th className="py-3.5 px-5 text-right font-bold">발주 필요 수량</th>
+                  <tr className="border-b-2 border-[#8B5A2B] text-[#3B2313] text-sm bg-[#F5E6C4]">
+                    <th className="py-3.5 px-5 font-black">파츠 등급</th>
+                    <th className="py-3.5 px-5 font-black">부자재 유물명</th>
+                    <th className="py-3.5 px-5 font-black">생산 보물섬(발주처)</th>
+                    <th className="py-3.5 px-5 text-right font-black">파츠 단가</th>
+                    <th className="py-3.5 px-5 text-right font-black">총 필요 파츠</th>
+                    <th className="py-3.5 px-5 text-right font-black">창고 보유량</th>
+                    <th className="py-3.5 px-5 font-black w-44">보물창고 게이지</th>
+                    <th className="py-3.5 px-5 text-right font-black">보물섬 원정 목표</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-200/70">
+                <tbody className="divide-y divide-[#DFC699]">
                   {materialStatusList.map((m) => {
                     const isCommon = m.specType === '공통 부자재'
                     const ratio =
@@ -1557,66 +1539,66 @@ function App() {
                         ? Math.min(100, Math.round((m.stock / m.requiredQty) * 100))
                         : 100
                     const isShort = m.shortageQty > 0
+                    const island = ISLAND_META[m.supplierName]
 
                     return (
                       <tr
                         key={m.id}
                         className={`transition ${
-                          isShort ? 'bg-rose-50/25 hover:bg-rose-50/50' : 'hover:bg-stone-50/80'
+                          isShort ? 'bg-red-50/60 hover:bg-red-100/50' : 'hover:bg-[#FAF0D7]'
                         }`}
                       >
                         <td className="py-4 px-5">
                           <span
-                            className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${
+                            className={`inline-block px-2.5 py-1 rounded-lg text-xs font-black ${
                               isCommon
-                                ? 'bg-stone-200/80 text-stone-700'
-                                : 'bg-teal-50 text-teal-800 border border-teal-200/80'
+                                ? 'bg-[#E6CFA0] text-[#3B2313]'
+                                : 'bg-amber-400 text-[#3B2313] border border-[#8B5A2B]'
                             }`}
                           >
-                            {isCommon ? '공통 단가' : '규격별 단가'}
+                            {isCommon ? '⚙️ 공통 유물' : '💎 전용 유물'}
                           </span>
                         </td>
-                        <td className="py-4 px-5 font-extrabold text-stone-900 text-lg">
+                        <td className="py-4 px-5 font-black text-[#3B2313] text-lg">
                           {m.name}
                         </td>
-                        <td className="py-4 px-5 text-stone-600 font-semibold">
-                          {m.supplierName}
+                        <td className="py-4 px-5 text-[#5A381E] font-extrabold">
+                          {island?.emoji} {m.supplierName}
                         </td>
-                        <td className="py-4 px-5 text-right font-mono font-bold text-stone-800">
-                          {formatCurrency(m.unitCost)}
+                        <td className="py-4 px-5 text-right font-mono font-black text-[#3B2313]">
+                          {(m.unitCost / 10000).toLocaleString()}만 골드
                         </td>
-                        <td className="py-4 px-5 text-right font-mono text-lg font-bold text-stone-900">
+                        <td className="py-4 px-5 text-right font-mono text-lg font-black text-[#3B2313]">
                           {m.requiredQty}개
                         </td>
-                        <td className="py-4 px-5 text-right font-mono text-lg text-stone-600 font-semibold">
+                        <td className="py-4 px-5 text-right font-mono text-lg text-[#6B4423] font-bold">
                           {m.stock}개
                         </td>
                         <td className="py-4 px-5">
                           <div className="space-y-1">
-                            <div className="h-2.5 w-full rounded-full bg-stone-200 overflow-hidden">
+                            <div className="h-3 w-full rounded-full bg-[#E6CFA0] overflow-hidden border border-[#8B5A2B]">
                               <div
                                 className={`h-full rounded-full transition-all ${
-                                  isShort ? 'bg-rose-500' : 'bg-teal-600'
+                                  isShort ? 'bg-red-600' : 'bg-emerald-600'
                                 }`}
                                 style={{ width: `${ratio}%` }}
                               />
                             </div>
-                            <span className="text-xs font-semibold text-stone-500 block">
+                            <span className="text-xs font-extrabold text-[#6B4423] block">
                               {m.requiredQty === 0
                                 ? '소요 없음'
-                                : `재고 충당 ${ratio}%`}
+                                : `창고 충당 ${ratio}%`}
                             </span>
                           </div>
                         </td>
                         <td className="py-4 px-5 text-right">
                           {isShort ? (
-                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-100/90 text-rose-800 font-mono text-base font-extrabold border border-rose-200">
-                              +{m.shortageQty}개 발주
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-700 text-amber-200 font-mono text-base font-black shadow-xs">
+                              🧭 +{m.shortageQty}개 원정발주!
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-teal-700 font-bold text-base">
-                              <Check className="w-4 h-4" />
-                              재고 충분
+                            <span className="inline-flex items-center gap-1 text-emerald-800 font-black text-base">
+                              💰 창고 보물 충분!
                             </span>
                           )}
                         </td>
@@ -1629,197 +1611,190 @@ function App() {
           </div>
         </section>
 
-        {/* STEP 3. 발주처별 자동 발주서 및 최종 메일 발송 (2차 사람 확인) */}
-        <section className="space-y-5">
-          <div className="flex flex-wrap items-end justify-between gap-2">
+        {/* 🏴‍☠️ 최종 보물섬: 4대 장인 길드 섬으로 전서구(발주서 메일) 날리기! */}
+        <section className="bg-[#FAF0D7] border-4 border-[#8B5A2B] rounded-3xl p-6 shadow-2xl space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-2 border-b-2 border-[#8B5A2B]/40 pb-4">
             <div>
-              <div className="inline-flex items-center gap-2 text-sm font-bold text-teal-800 uppercase tracking-wide">
-                <span className="w-6 h-6 rounded-lg bg-teal-800 text-white flex items-center justify-center text-xs">
-                  3
-                </span>
-                Step 3 · Supplier Purchase Order Documents & Email
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-800 text-amber-200 text-xs font-black uppercase">
+                ⛵ Final Quest · 선장님의 2차 인장 날인 & 전서구 출항 (Human-in-the-Loop #2)
               </div>
-              <h2 className="text-2xl font-extrabold text-stone-900 mt-1">
-                발주처별 정식 발주서(PO) 확인 및 최종 메일 발송
+              <h2 className="text-2xl md:text-3xl font-black text-[#3B2313] mt-1.5">
+                4대 장인의 보물섬으로 발주 두루마리(메일) 날리기!
               </h2>
             </div>
-            <p className="text-base text-stone-600">
-              각 발주처 카드의 <strong>[📋 정식 발주서(PO) 문서 보기]</strong>로 발주서를 확인하고, <strong>사람 최종 확인 체크</strong> 후 메일을 발송하세요.
+            <p className="text-base font-bold text-[#6B4423]">
+              각 보물섬 카드의 <strong>[📜 정식 발주서 두루마리 보기]</strong>를 확인하고, <strong>선장님 최종 인장 체크</strong> 후 전서구를 날려 보내세요!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {supplierPOs.map((po) => (
-              <div
-                key={po.supplierName}
-                className={`bg-white rounded-2xl border transition flex flex-col justify-between overflow-hidden ${
-                  po.mailSent
-                    ? 'border-teal-300 shadow-xs'
-                    : po.humanConfirmed
-                    ? 'border-teal-700/60 shadow-md'
-                    : 'border-stone-200/90 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)]'
-                }`}
-              >
-                {/* 카드 상단 헤더 */}
-                <div>
-                  <div className="p-6 border-b border-stone-100 flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-stone-100 border border-stone-200/80 flex items-center justify-center text-stone-700 shrink-0">
-                        <Building2 className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-stone-400">
-                            {po.poNo}
-                          </span>
-                          <h3 className="text-xl font-extrabold text-stone-900">
-                            {po.supplierName}
-                          </h3>
-                          {po.mailSent ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                              메일 발송 완료
-                            </span>
-                          ) : po.humanConfirmed ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                              사람 확인됨 · 발송 가능
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-stone-100 text-stone-600">
-                              2차 확인 대기
-                            </span>
-                          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {supplierPOs.map((po) => {
+              const island = ISLAND_META[po.supplierName] || {
+                islandTitle: `${po.supplierName} 보물섬`,
+                emoji: '🏝️',
+                desc: '전설의 부자재 장인들이 모여 사는 보물섬',
+              }
+
+              return (
+                <div
+                  key={po.supplierName}
+                  className={`rounded-3xl border-4 transition flex flex-col justify-between overflow-hidden ${
+                    po.mailSent
+                      ? 'bg-[#EBF7EE] border-emerald-700 shadow-lg'
+                      : po.humanConfirmed
+                      ? 'bg-[#FFFDF7] border-red-700 shadow-2xl scale-[1.01]'
+                      : 'bg-[#FFFDF7] border-[#8B5A2B] shadow-md'
+                  }`}
+                >
+                  <div>
+                    <div className="p-6 bg-[#E6CFA0] border-b-2 border-[#8B5A2B] flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="w-14 h-14 rounded-2xl bg-[#3B2313] border-2 border-amber-400 flex items-center justify-center text-3xl shrink-0 shadow">
+                          {island.emoji}
                         </div>
-                        <p className="text-sm text-stone-500 flex items-center gap-1.5 mt-1 font-mono">
-                          <Mail className="w-4 h-4 text-stone-400" />
-                          {po.supplierEmail} · {po.supplierInfo.contactName}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-bold text-stone-400 block">
-                        총 발주 공급가액
-                      </span>
-                      <span className="text-2xl font-extrabold text-teal-800 font-mono">
-                        {formatCurrency(po.totalOrderCost)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 발주 부자재 목록 */}
-                  <div className="p-6 space-y-2.5">
-                    <div className="flex items-center justify-between pb-1">
-                      <span className="text-xs font-bold text-stone-400 uppercase">
-                        발주 부자재 품목 ({po.items.length}종)
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setViewingSupplierPoName(po.supplierName)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-sm font-bold transition cursor-pointer"
-                      >
-                        <FileCheck2 className="w-4 h-4" />
-                        정식 발주서(PO) 문서 보기
-                      </button>
-                    </div>
-
-                    {po.items.map((item) => (
-                      <div
-                        key={item.materialId}
-                        className="flex items-center justify-between bg-stone-50/90 border border-stone-200/70 rounded-xl px-4 py-3"
-                      >
                         <div>
-                          <div className="font-bold text-stone-900 text-base">
-                            {item.materialName}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs font-black px-2 py-0.5 rounded bg-[#3B2313] text-amber-300">
+                              {po.poNo}
+                            </span>
+                            <h3 className="text-xl font-black text-[#3B2313]">
+                              {island.islandTitle}
+                            </h3>
                           </div>
-                          <div className="text-sm text-stone-500">
-                            단가 {formatCurrency(item.unitCost)} · 필요{' '}
-                            {item.requiredQty}개 (현재 재고 {item.currentStock}개)
-                          </div>
-                        </div>
-                        <div className="text-right font-mono">
-                          <div className="text-lg font-extrabold text-rose-700">
-                            {item.orderQty}개 발주
-                          </div>
-                          <div className="text-sm font-bold text-stone-600">
-                            {formatCurrency(item.subTotalCost)}
-                          </div>
+                          <p className="text-xs font-bold text-[#5A381E] mt-1">
+                            {island.desc}
+                          </p>
+                          <p className="text-xs font-mono font-bold text-emerald-900 mt-1 flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5" />
+                            전서구 목적지: {po.supplierEmail} ({po.supplierInfo.contactName})
+                          </p>
                         </div>
                       </div>
-                    ))}
+
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-black text-[#6B4423] block">
+                          필요 금화 (공급가액)
+                        </span>
+                        <span className="text-2xl font-black text-red-800 font-mono">
+                          {formatCurrency(po.totalOrderCost)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 채집할 보물 품목 */}
+                    <div className="p-6 space-y-3">
+                      <div className="flex items-center justify-between pb-1">
+                        <span className="text-sm font-black text-[#6B4423]">
+                          📦 이 섬에서 조달할 부족 보물 ({po.items.length}종)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setViewingSupplierPoName(po.supplierName)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#3B2313] border-2 border-[#8B5A2B] text-sm font-black transition cursor-pointer shadow-xs"
+                        >
+                          <FileCheck2 className="w-4 h-4" />
+                          📜 정식 발주서(PO) 두루마리 보기
+                        </button>
+                      </div>
+
+                      {po.items.map((item) => (
+                        <div
+                          key={item.materialId}
+                          className="flex items-center justify-between bg-[#FAF0D7] border-2 border-[#C19A6B] rounded-2xl px-4 py-3"
+                        >
+                          <div>
+                            <div className="font-black text-[#3B2313] text-base">
+                              💎 {item.materialName}
+                            </div>
+                            <div className="text-sm font-bold text-[#6B4423]">
+                              단가 {(item.unitCost / 10000).toLocaleString()}만 골드 · 총 필요{' '}
+                              {item.requiredQty}개 (창고 보유 {item.currentStock}개)
+                            </div>
+                          </div>
+                          <div className="text-right font-mono">
+                            <div className="text-lg font-black text-red-700">
+                              +{item.orderQty}개 발주!
+                            </div>
+                            <div className="text-sm font-extrabold text-[#3B2313]">
+                              {formatCurrency(item.subTotalCost)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 하단 2차 선장님 인장 체크 & 전서구 날리기 */}
+                  <div className="px-6 py-4 bg-[#F3E2B8] border-t-2 border-[#8B5A2B] flex flex-wrap items-center justify-between gap-3">
+                    <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        disabled={po.mailSent}
+                        checked={po.humanConfirmed}
+                        onChange={() => togglePoConfirm(po.supplierName)}
+                        className="w-5 h-5 accent-red-700 rounded cursor-pointer"
+                      />
+                      <span className="text-base font-black text-[#3B2313]">
+                        🧭 선장님 최종 인장 찍기 (2차 사람 확인)
+                      </span>
+                    </label>
+
+                    <button
+                      type="button"
+                      disabled={!po.humanConfirmed || po.mailSent}
+                      onClick={() => handleSendMail(po.supplierName)}
+                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-black transition ${
+                        po.mailSent
+                          ? 'bg-emerald-800 text-amber-200 cursor-default'
+                          : po.humanConfirmed
+                          ? 'bg-red-700 hover:bg-red-800 text-white cursor-pointer shadow-lg border border-amber-300'
+                          : 'bg-[#D5BE8B] text-[#8C734B] cursor-not-allowed'
+                      }`}
+                    >
+                      {po.mailSent ? (
+                        <>
+                          <Trophy className="w-5 h-5 text-amber-300" />
+                          🦅 전서구 출항 & 보물 확보 완료!
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          🦅 황금 전서구(발주 메일) 날리기!
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                {/* 하단 2차 사람 확인 & 발송 액션 바 */}
-                <div className="px-6 py-4 bg-stone-50 border-t border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
-                  <label className="inline-flex items-center gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      disabled={po.mailSent}
-                      checked={po.humanConfirmed}
-                      onChange={() => togglePoConfirm(po.supplierName)}
-                      className="w-5 h-5 accent-teal-800 rounded cursor-pointer"
-                    />
-                    <span className="text-base font-bold text-stone-800">
-                      발주서 내용 사람 최종 확인 완료
-                    </span>
-                  </label>
-
-                  <button
-                    type="button"
-                    disabled={!po.humanConfirmed || po.mailSent}
-                    onClick={() => handleSendMail(po.supplierName)}
-                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-bold transition ${
-                      po.mailSent
-                        ? 'bg-teal-100 text-teal-800 cursor-default'
-                        : po.humanConfirmed
-                        ? 'bg-teal-800 hover:bg-teal-900 text-white cursor-pointer shadow-sm'
-                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {po.mailSent ? (
-                      <>
-                        <ShieldCheck className="w-5 h-5" />
-                        메일 발송 완료됨
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        발주서 메일 보내기
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       </main>
 
-      {/* 모달 1: 개별 바이어 주문서 원문 열람 모달 */}
+      {/* 모달 1: 개별 바이어 양피지 주문서 원문 열람 모달 */}
       {viewingBuyerOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#F6F5F0] border border-stone-300 rounded-3xl max-w-4xl w-full p-6 space-y-4 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#E6CFA0] border-4 border-[#8B5A2B] rounded-3xl max-w-4xl w-full p-6 space-y-4 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-teal-800" />
-                <span className="font-extrabold text-lg text-stone-900">
-                  바이어 주문서 원본 문서 열람 ({viewingBuyerOrder.buyerName})
+                <ScrollText className="w-6 h-6 text-red-800" />
+                <span className="font-black text-xl text-[#3B2313]">
+                  📜 바이어 유리병 양피지 의뢰서 원문 ({viewingBuyerOrder.buyerName})
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-300 text-stone-700 text-sm font-bold hover:bg-stone-100 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FDF6E2] border-2 border-[#8B5A2B] text-[#3B2313] text-sm font-black hover:bg-white cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  인쇄 / PDF 저장
+                  양피지 인쇄 / PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewingBuyerOrderId(null)}
-                  className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-stone-800 text-white text-sm font-bold hover:bg-stone-700 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#3B2313] text-amber-300 text-sm font-black hover:bg-black cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                   닫기
@@ -1832,30 +1807,30 @@ function App() {
         </div>
       )}
 
-      {/* 모달 2: 개별 발주처 정식 발주서(PO) 열람 모달 */}
+      {/* 모달 2: 개별 발주처 정식 발주서(PO) 두루마리 열람 모달 */}
       {viewingSupplierPo && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#F6F5F0] border border-stone-300 rounded-3xl max-w-4xl w-full p-6 space-y-4 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#E6CFA0] border-4 border-[#8B5A2B] rounded-3xl max-w-4xl w-full p-6 space-y-4 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileCheck2 className="w-5 h-5 text-teal-800" />
-                <span className="font-extrabold text-lg text-stone-900">
-                  발주처 정식 발주서(PO) 문서 확인 ({viewingSupplierPo.supplierName})
+                <FileCheck2 className="w-6 h-6 text-emerald-900" />
+                <span className="font-black text-xl text-[#3B2313]">
+                  📜 보물섬 장인 길드 정식 발주서 두루마리 ({viewingSupplierPo.supplierName})
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-stone-300 text-stone-700 text-sm font-bold hover:bg-stone-100 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#FDF6E2] border-2 border-[#8B5A2B] text-[#3B2313] text-sm font-black hover:bg-white cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
-                  인쇄 / PDF 저장
+                  발주서 인쇄 / PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewingSupplierPoName(null)}
-                  className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-stone-800 text-white text-sm font-bold hover:bg-stone-700 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-[#3B2313] text-amber-300 text-sm font-black hover:bg-black cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                   닫기
@@ -1868,53 +1843,53 @@ function App() {
         </div>
       )}
 
-      {/* 모달 3: 전체 주문서·발주서 통합 문서 보관함 */}
+      {/* 모달 3: 선장님의 비밀 문서 보관함 (통합 열람) */}
       {showDocArchiveModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#F6F5F0] border border-stone-300 rounded-3xl max-w-5xl w-full p-6 space-y-5 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-300 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#E6CFA0] border-4 border-[#8B5A2B] rounded-3xl max-w-5xl w-full p-6 space-y-5 shadow-2xl my-8 max-h-[92vh] overflow-y-auto">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#8B5A2B] pb-4">
               <div className="flex items-center gap-2.5">
-                <FolderOpen className="w-6 h-6 text-teal-800" />
+                <FolderOpen className="w-7 h-7 text-red-800" />
                 <div>
-                  <h2 className="text-xl font-extrabold text-stone-900">
-                    전체 바이어 주문서 & 발주처 발주서(PO) 문서 보관함
+                  <h2 className="text-2xl font-black text-[#3B2313]">
+                    🗺️ 선장님의 비밀 양피지 문서 보관함
                   </h2>
-                  <p className="text-sm text-stone-500">
-                    모든 바이어 주문서 원문({orders.length}건)과 발주처별 정식 발주서({supplierPOs.length}건)를 한곳에서 열람·확인할 수 있습니다.
+                  <p className="text-sm font-bold text-[#6B4423]">
+                    바이어가 보낸 유리병 주문서 원문({orders.length}건)과 4대 장인섬으로 보낼 정식 발주서({supplierPOs.length}건)가 모두 보관되어 있습니다!
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex bg-stone-200 p-1 rounded-xl text-sm font-bold">
+                <div className="flex bg-[#3B2313] p-1 rounded-xl text-sm font-black">
                   <button
                     type="button"
                     onClick={() => setArchiveTab('BUYER_ORDER')}
                     className={`px-4 py-1.5 rounded-lg transition cursor-pointer ${
                       archiveTab === 'BUYER_ORDER'
-                        ? 'bg-teal-800 text-white shadow-xs'
-                        : 'text-stone-700 hover:text-stone-900'
+                        ? 'bg-amber-400 text-[#3B2313]'
+                        : 'text-amber-200 hover:text-white'
                     }`}
                   >
-                    바이어 주문서 원문 ({orders.length}건)
+                    🍾 바이어 의뢰서 원문 ({orders.length})
                   </button>
                   <button
                     type="button"
                     onClick={() => setArchiveTab('SUPPLIER_PO')}
                     className={`px-4 py-1.5 rounded-lg transition cursor-pointer ${
                       archiveTab === 'SUPPLIER_PO'
-                        ? 'bg-teal-800 text-white shadow-xs'
-                        : 'text-stone-700 hover:text-stone-900'
+                        ? 'bg-amber-400 text-[#3B2313]'
+                        : 'text-amber-200 hover:text-white'
                     }`}
                   >
-                    발주처 정식 발주서 ({supplierPOs.length}건)
+                    🦅 보물섬 정식 발주서 ({supplierPOs.length})
                   </button>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setShowDocArchiveModal(false)}
-                  className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-stone-800 text-white text-sm font-bold hover:bg-stone-700 cursor-pointer"
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-red-800 text-white text-sm font-black hover:bg-red-900 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                   닫기
@@ -1930,12 +1905,12 @@ function App() {
                       key={o.id}
                       type="button"
                       onClick={() => setArchiveSelectedOrderId(o.id)}
-                      className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition cursor-pointer ${
+                      className={`px-3.5 py-2 rounded-xl text-sm font-black border-2 transition cursor-pointer ${
                         archiveSelectedOrderId === o.id
-                          ? 'bg-stone-900 text-white border-stone-900'
+                          ? 'bg-[#3B2313] text-amber-300 border-[#3B2313]'
                           : !o.confirmed
-                          ? 'bg-amber-50 text-amber-900 border-amber-300'
-                          : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
+                          ? 'bg-red-100 text-red-900 border-red-600'
+                          : 'bg-[#FDF6E2] text-[#3B2313] border-[#8B5A2B]'
                       }`}
                     >
                       {o.id} · {o.buyerName} ({o.quantity}대)
@@ -1954,13 +1929,13 @@ function App() {
                       key={po.supplierName}
                       type="button"
                       onClick={() => setArchiveSelectedPoSupplier(po.supplierName)}
-                      className={`px-4 py-2 rounded-xl text-sm font-bold border transition cursor-pointer ${
+                      className={`px-4 py-2 rounded-xl text-sm font-black border-2 transition cursor-pointer ${
                         archiveSelectedPoSupplier === po.supplierName
-                          ? 'bg-teal-800 text-white border-teal-800'
-                          : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-100'
+                          ? 'bg-emerald-900 text-amber-200 border-emerald-900'
+                          : 'bg-[#FDF6E2] text-[#3B2313] border-[#8B5A2B]'
                       }`}
                     >
-                      {po.poNo} · {po.supplierName} ({po.items.length}품목)
+                      {ISLAND_META[po.supplierName]?.emoji} {po.poNo} · {po.supplierName}
                     </button>
                   ))}
                 </div>

@@ -3,6 +3,7 @@ export type KioskModelId = 'KSK-15' | 'KSK-21' | 'KSK-27' | 'KSK-32'
 export interface KioskModel {
   id: KioskModelId
   name: string
+  unitPrice: number // 모델 개당 단가 (4,000,000원)
   bom: {
     materialId: string
     qtyPerUnit: number
@@ -12,6 +13,8 @@ export interface KioskModel {
 export interface MaterialItem {
   id: string
   name: string
+  specType: '공통 부자재' | '모델별 규격 부자재'
+  unitCost: number // 부자재 개당 단가
   stock: number
   supplierName: string
   supplierEmail: string
@@ -23,7 +26,7 @@ export interface BuyerOrder {
   modelId: KioskModelId
   quantity: number
   dueDate: string
-  errorMsg?: string // 수량 오류 등 이상 감지 메시지
+  errorMsg?: string
   confirmed: boolean // 1차 사람 확인 여부
 }
 
@@ -33,10 +36,13 @@ export interface SupplierPO {
   items: {
     materialId: string
     materialName: string
+    unitCost: number
     requiredQty: number
     currentStock: number
-    orderQty: number // 부족 수량 (= 발주 수량)
+    orderQty: number
+    subTotalCost: number
   }[]
+  totalOrderCost: number
   humanConfirmed: boolean // 2차 사람 확인 여부 (메일 발송 전)
-  mailSent: boolean       // 최종 메일 발송 여부
+  mailSent: boolean
 }

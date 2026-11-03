@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from 'react'
 import {
   Anchor,
   Compass,
-  Crown,
   FileCheck2,
   FileSpreadsheet,
   FileText,
@@ -15,12 +14,10 @@ import {
   RotateCcw,
   ScrollText,
   Send,
-  Ship,
   Skull,
   Sparkles,
   Swords,
   Trophy,
-  UploadCloud,
   X,
 } from 'lucide-react'
 import {
@@ -49,6 +46,12 @@ interface SampleDraggableFile {
   dueDate: string
   docMemo: string
   badgeText: string
+}
+
+interface BurstEffect {
+  id: number
+  type: 'COIN_BURST' | 'BIRD_FLY' | 'BOTTLE_SPLASH'
+  label: string
 }
 
 const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
@@ -130,26 +133,34 @@ const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
 
 const ISLAND_META: Record<
   string,
-  { islandTitle: string; emoji: string; desc: string }
+  { islandTitle: string; emoji: string; npcName: string; npcEmoji: string; desc: string }
 > = {
   한빛디스플레이: {
     islandTitle: '빛의 수정섬 (한빛디스플레이 길드)',
     emoji: '🔮',
+    npcName: '수정세공사 루미나',
+    npcEmoji: '🧝‍♀️',
     desc: '신비한 15·21·27·32인치 마법 터치패널 유물을 깎아내는 수정 장인들의 섬',
   },
   코리아임베디드: {
     islandTitle: '강철 심장섬 (코리아임베디드 길드)',
     emoji: '⚙️',
+    npcName: '기계공학자 기어스',
+    npcEmoji: '🧙‍♂️',
     desc: '키오스크의 두뇌인 통합 메인보드와 고효율 마력 전원장치를 벼려내는 기계섬',
   },
   페이먼트테크: {
     islandTitle: '황금 주화섬 (페이먼트테크 길드)',
     emoji: '🪙',
+    npcName: '황금상인 골드만',
+    npcEmoji: '🤴',
     desc: '황금 카드 리더기와 영수증 두루마리 인쇄기를 제작하는 상인 길드의 본거지',
   },
   정밀메탈웍스: {
     islandTitle: '무쇠 대장간섬 (정밀메탈웍스 길드)',
     emoji: '🛡️',
+    npcName: '대장장이 토르딘',
+    npcEmoji: '🧔🔨',
     desc: '어떤 폭풍우도 견디는 키오스크 강철 외함 갑옷을 두드리는 드워프 대장간섬',
   },
 }
@@ -171,6 +182,17 @@ function App() {
   const [materials] = useState(INITIAL_MATERIALS)
   const [selectedModelTab, setSelectedModelTab] = useState<KioskModelId | 'ALL'>('ALL')
   const [showAddForm, setShowAddForm] = useState(false)
+
+  // 해적선 현재 위치 (0: 유리병 해변, 1: 황금 골렘 신전, 2: 선박 보물창고, 3: 4대 장인 보물섬)
+  const [shipStopIndex, setShipStopIndex] = useState<number>(0)
+  // 캐릭터 대사 상태
+  const [captainSpeech, setCaptainSpeech] = useState<string>(
+    '🏴‍☠️ "나는 캡틴 케빈! 바다에서 건져 올린 바이어 의뢰서 중 해골 함정 숫자가 3건 보인다! 원문을 펼쳐 진짜 수량으로 베어내라!"'
+  )
+  const [parrotSpeech, setParrotSpeech] = useState<string>(
+    '🦜 "끼룩! 피코가 분석했어요! 메가커피(1대), 버거킹덤(2,500대), 스타파킹(-10대)은 숫자 함정이에요! 선장님 확인이 필요해요!"'
+  )
+  const [effects, setEffects] = useState<BurstEffect[]>([])
 
   // 문서 열람 모달 상태
   const [viewingBuyerOrderId, setViewingBuyerOrderId] = useState<string | null>(null)
@@ -201,6 +223,14 @@ function App() {
   // 발주처별 2차 사람 확인 및 메일 발송 상태
   const [poConfirmMap, setPoConfirmMap] = useState<Record<string, boolean>>({})
   const [poSentMap, setPoSentMap] = useState<Record<string, boolean>>({})
+
+  const triggerEffect = (type: BurstEffect['type'], label: string) => {
+    const id = Date.now() + Math.random()
+    setEffects((prev) => [...prev, { id, type, label }])
+    setTimeout(() => {
+      setEffects((prev) => prev.filter((e) => e.id !== id))
+    }, 2200)
+  }
 
   const showUploadBanner = (msg: string) => {
     setUploadNotice(msg)
@@ -249,6 +279,9 @@ function App() {
     }
 
     setOrders((prev) => [created, ...prev])
+    triggerEffect('BOTTLE_SPLASH', `🍾 풍덩! ${params.buyerName} 유리병 건지기 성공!`)
+    setShipStopIndex(0)
+
     if (err) {
       const fallbackSuggest =
         params.suggestedQty ??
@@ -257,10 +290,24 @@ function App() {
         ...prev,
         [nextId]: String(fallbackSuggest),
       }))
+      setCaptainSpeech(
+        `🧔‍♂️ "으하하! 방금 건진 [${params.buyerName}] 유리병에 해골 함정(${params.quantity}대)이 숨어 있군! 내가 직접 수량을 확인하겠다!"`
+      )
+      setParrotSpeech(
+        `🦜 "삐약! 위험해요 선장님! ${params.quantity}대는 이상한 숫자예요! ${fallbackSuggest}대가 맞는지 확인해 주세요!"`
+      )
       showUploadBanner(
         `☠️ [${params.sourceLabel}] 유리병 편지에서 숫자 함정(${params.quantity}대) 발견! 선장님(1차 사람 확인)의 해독이 필요합니다!`
       )
     } else {
+      setCaptainSpeech(
+        `🧔‍♂️ "좋아! [${params.buyerName}]의 ${params.modelId} ${params.quantity}대 의뢰는 완벽하군! 즉시 보물창고 재고를 대조하라!"`
+      )
+      setParrotSpeech(
+        `🦜 "끼룩! 정상 주문서예요! 400만 골드 × ${params.quantity}대 = 총 ${(
+          params.quantity * 400
+        ).toLocaleString()}만 골드가 추가됐어요!"`
+      )
       showUploadBanner(
         `🪙 [${params.sourceLabel}] 유리병 의뢰서 해독 성공! ${params.buyerName} (${params.modelId} · ${params.quantity}대) 보물 지도에 등록 완료!`
       )
@@ -374,6 +421,20 @@ function App() {
     )
     setPoConfirmMap({})
     setPoSentMap({})
+
+    triggerEffect(
+      'COIN_BURST',
+      `⚔️ 촤앗!! [${targetOrder.buyerName}] 숫자 함정 격파! +${(
+        nextQty * 400
+      ).toLocaleString()}만 골드 획득!`
+    )
+    setShipStopIndex(2)
+    setCaptainSpeech(
+      `🧔‍♂️ "⚔️ 이얏호! [${targetOrder.buyerName}]의 함정 숫자를 ${nextQty}대로 베어버렸다! 닻을 올려라, 보물창고와 장인의 섬으로 전진!!"`
+    )
+    setParrotSpeech(
+      `🦜 "대단해요 선장님!! ${nextQty}대가 추가로 확정되어 필요한 부자재 보물 수량이 새로 계산되었어요!"`
+    )
   }
 
   // 신규 주문서 수동 추가
@@ -402,6 +463,13 @@ function App() {
     setPoConfirmMap({})
     setPoSentMap({})
     setUploadNotice(null)
+    setShipStopIndex(0)
+    setCaptainSpeech(
+      '🏴‍☠️ "항해 일지를 초기화했다! 다시 제1항구에서 바이어 유리병 의뢰서의 함정 숫자를 해독하자!"'
+    )
+    setParrotSpeech(
+      '🦜 "끼룩! 다시 처음부터 보물섬 부자재 원정을 시작해요!"'
+    )
   }
 
   // 확정된 주문서 기준으로 BOM 전개 → 부자재별 필요수량 및 부족수량 계산
@@ -487,10 +555,20 @@ function App() {
   }, [materialStatusList, poConfirmMap, poSentMap])
 
   const togglePoConfirm = (supplierName: string) => {
+    const nextState = !poConfirmMap[supplierName]
     setPoConfirmMap((prev) => ({
       ...prev,
-      [supplierName]: !prev[supplierName],
+      [supplierName]: nextState,
     }))
+    setShipStopIndex(3)
+    if (nextState) {
+      setCaptainSpeech(
+        `🧔‍♂️ "좋아! [${supplierName}] 보물섬으로 보낼 발주 두루마리에 내 선장 인장을 쾅 찍었다! 이제 황금 전서구를 날려라!"`
+      )
+      setParrotSpeech(
+        `🦜 "끼룩! 2차 사람 확인 완료! 이제 [황금 전서구 날리기] 버튼을 누르면 발주 메일이 날아가요!"`
+      )
+    }
   }
 
   const handleSendMail = (supplierName: string) => {
@@ -499,6 +577,17 @@ function App() {
       ...prev,
       [supplierName]: true,
     }))
+    setShipStopIndex(3)
+    triggerEffect(
+      'BIRD_FLY',
+      `🦅 슈우웅~!! [${supplierName}] 보물섬으로 황금 전서구(발주서 메일) 발송 완료!!`
+    )
+    setCaptainSpeech(
+      `🧔‍♂️ "🦅 날아라 황금 전서구야!! [${supplierName}] 장인들에게 발주서가 전달되었다! 보물선이 곧 도착한다!"`
+    )
+    setParrotSpeech(
+      `🦜 "만세!! 🎁 [${supplierName}] 부자재 보물 상자 확보 성공!!"`
+    )
     showUploadBanner(
       `🦅 [${supplierName}] 보물섬 길드로 황금 전서구(발주서 메일)가 출항했습니다! 곧 부자재 보물선이 도착합니다!`
     )
@@ -516,6 +605,9 @@ function App() {
   const viewingBuyerOrder = orders.find((o) => o.id === viewingBuyerOrderId) || null
   const viewingSupplierPo =
     supplierPOs.find((p) => p.supplierName === viewingSupplierPoName) || null
+
+  // 해적선 가로 위치 퍼센트 계산 (0 -> 10%, 1 -> 36%, 2 -> 62%, 3 -> 86%)
+  const shipLeftPercent = [8, 34, 60, 84][shipStopIndex] ?? 8
 
   // 양피지 스타일 바이어 주문서 원문 문서 렌더링
   const renderBuyerOrderDocument = (ord: BuyerOrder) => {
@@ -924,13 +1016,58 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen pb-20 text-[#3B2313]">
+    <div className="min-h-screen pb-24 text-[#3B2313] relative">
+      {/* 화면 전체 액션 애니메이션 오버레이 (황금 코인 분수 / 황금 전서구 비행 / 유리병 물보라) */}
+      {effects.map((eff) => (
+        <div
+          key={eff.id}
+          className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden"
+        >
+          {eff.type === 'COIN_BURST' && (
+            <div className="relative flex flex-col items-center">
+              <div className="flex gap-4 text-5xl anim-coin">
+                <span>🪙</span>
+                <span>💰</span>
+                <span>⚔️</span>
+                <span>💎</span>
+                <span>👑</span>
+                <span>🪙</span>
+              </div>
+              <div className="mt-2 px-6 py-3 rounded-2xl bg-[#1B120C] border-4 border-amber-400 text-amber-300 text-xl font-black shadow-2xl animate-bounce">
+                {eff.label}
+              </div>
+            </div>
+          )}
+
+          {eff.type === 'BIRD_FLY' && (
+            <div className="w-full h-full relative flex items-center justify-center">
+              <div className="fixed left-0 top-1/2 text-6xl anim-bird flex items-center gap-2">
+                <span>🦅</span>
+                <span>📜✨</span>
+              </div>
+              <div className="px-6 py-3 rounded-2xl bg-emerald-950 border-4 border-amber-400 text-amber-200 text-xl font-black shadow-2xl animate-bounce">
+                {eff.label}
+              </div>
+            </div>
+          )}
+
+          {eff.type === 'BOTTLE_SPLASH' && (
+            <div className="flex flex-col items-center">
+              <div className="text-6xl anim-coin">🌊🍾✨</div>
+              <div className="mt-2 px-6 py-3 rounded-2xl bg-teal-950 border-4 border-amber-300 text-amber-200 text-xl font-black shadow-2xl">
+                {eff.label}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
       {/* 상단 해적선 조타실 헤더 */}
       <header className="sticky top-0 z-30 bg-[#1B120C]/95 backdrop-blur-md border-b-4 border-[#B8860B] text-[#FDF6E2] shadow-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 text-[#1B120C] flex items-center justify-center shadow-lg border-2 border-amber-200 ship-float">
-              <Ship className="w-7 h-7" />
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 text-[#1B120C] flex items-center justify-center shadow-lg border-2 border-amber-200 anim-ship text-3xl">
+              ⛵
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
@@ -938,11 +1075,11 @@ function App() {
                   🏴‍☠️ 보물섬 키오스크 대항해 발주 원정대
                 </h1>
                 <span className="px-3 py-0.5 rounded-full text-xs font-extrabold bg-red-700 text-amber-100 border border-amber-400">
-                  선장님 2단 컨펌 퀘스트!
+                  캡틴 케빈 & 앵무새 피코 출동!
                 </span>
               </div>
               <p className="text-sm text-amber-100/80 mt-0.5">
-                [1단계] 유리병 주문서 함정 해독(선장 확인) ➔ [2단계] 400만 골드 유물 설계도 & 보물창고 탐색 ➔ [3단계] 4대 장인섬으로 전서구(발주서) 날리기!
+                [1단계] 유리병 주문서 함정 베기(선장 확인) ➔ [2단계] 400만 골드 유물 & 보물창고 탐색 ➔ [3단계] 4대 장인섬으로 전서구 날리기!
               </p>
             </div>
           </div>
@@ -976,86 +1113,185 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-8 space-y-10">
-        {/* 보물지도 항해 루트 트래커 배너 */}
-        <section className="bg-gradient-to-r from-[#F3E2B8] via-[#FAF0D7] to-[#F3E2B8] border-4 border-[#8B5A2B] rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-5 border-b-2 border-dashed border-[#8B5A2B]/50 pb-4">
+      <main className="max-w-7xl mx-auto px-6 pt-6 space-y-8">
+        {/* 🌊 실시간 움직이는 대항해 바다 스테이지 & 캐릭터 대화창 */}
+        <section className="bg-gradient-to-b from-[#0B3C5D] via-[#124E78] to-[#0E3A53] border-4 border-[#B8860B] rounded-3xl p-6 shadow-2xl text-white relative overflow-hidden space-y-5">
+          {/* 상단 제목 및 항해 조종 버튼 */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <Compass className="w-7 h-7 text-red-700 animate-spin" style={{ animationDuration: '12s' }} />
-              <h2 className="text-xl md:text-2xl font-black text-[#3B2313]">
-                🗺️ 그랜드 라인 부자재 보물섬 항해 지도 (Adventure Map)
-              </h2>
+              <Compass
+                className="w-7 h-7 text-amber-300 animate-spin"
+                style={{ animationDuration: '10s' }}
+              />
+              <div>
+                <h2 className="text-xl font-black text-amber-300">
+                  🌊 실시간 보물섬 항해 지도 (섬을 클릭하면 캡틴 케빈호가 출항합니다!)
+                </h2>
+              </div>
             </div>
-            <span className="px-3.5 py-1 rounded-full bg-[#3B2313] text-amber-300 text-sm font-extrabold">
-              🪙 키오스크 유물 1대당 현상금: 400만 골드 (공통 파츠 225만 + 전용 파츠 175만)
-            </span>
+            <div className="flex items-center gap-2 text-xs font-black">
+              {[
+                { idx: 0, label: '🏝️ 1. 유리병 해변' },
+                { idx: 1, label: '🗿 2. 황금 골렘 신전' },
+                { idx: 2, label: '🗝️ 3. 선박 보물창고' },
+                { idx: 3, label: '🌋 4. 장인의 보물섬' },
+              ].map((st) => (
+                <button
+                  key={st.idx}
+                  type="button"
+                  onClick={() => setShipStopIndex(st.idx)}
+                  className={`px-3 py-1.5 rounded-xl border-2 transition cursor-pointer ${
+                    shipStopIndex === st.idx
+                      ? 'bg-amber-400 text-[#1B120C] border-white shadow-md scale-105'
+                      : 'bg-[#1B120C]/70 text-amber-200 border-amber-600/60 hover:bg-[#1B120C]'
+                  }`}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-            {/* 제1항구 */}
-            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md relative">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-0.5 rounded-lg bg-red-700 text-white text-xs font-black">
-                  제1항구 · 유리병 해변
-                </span>
-                <Skull className="w-5 h-5 text-red-700" />
+          {/* 바다 위 4개의 섬과 움직이는 해적선 애니메이션 트랙 */}
+          <div className="relative h-44 bg-[#092C44]/80 rounded-2xl border-2 border-sky-400/30 px-6 pt-4 pb-8 flex items-center justify-between overflow-hidden">
+            {/* 점선 항로 */}
+            <div className="absolute left-12 right-12 top-1/2 border-t-4 border-dashed border-amber-300/40 -translate-y-2 pointer-events-none" />
+
+            {/* 움직이는 해적선 & 캡틴 케빈 캐릭터 */}
+            <div
+              style={{ left: `${shipLeftPercent}%` }}
+              className="absolute top-4 z-20 -translate-x-1/2 transition-all duration-1000 ease-in-out flex flex-col items-center pointer-events-none"
+            >
+              <div className="px-2.5 py-0.5 rounded-full bg-red-700 border border-amber-300 text-[11px] font-black text-amber-200 shadow whitespace-nowrap mb-0.5">
+                🏴‍☠️ 캡틴 케빈호 출항중!
               </div>
-              <div className="text-2xl font-black text-red-700 mt-2">
-                함정 의뢰서 {pendingOrdersCount}건
+              <div className="text-5xl anim-ship drop-shadow-[0_6px_8px_rgba(0,0,0,0.6)]">
+                ⛵
               </div>
-              <p className="text-sm font-bold text-[#6B4423] mt-1">
-                {pendingOrdersCount > 0
-                  ? '🧭 선장님! 이상한 수량 함정을 해독하세요!'
-                  : '✨ 모든 의뢰서 암호 해독 완료!'}
-              </p>
             </div>
 
-            {/* 제2항구 */}
-            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-0.5 rounded-lg bg-amber-700 text-white text-xs font-black">
-                  제2관문 · 황금 골렘 신전
-                </span>
-                <Crown className="w-5 h-5 text-amber-600" />
+            {/* 1번 섬: 유리병 해변 */}
+            <div
+              onClick={() => setShipStopIndex(0)}
+              className="relative z-10 flex flex-col items-center cursor-pointer group"
+            >
+              <div
+                className={`text-4xl ${
+                  pendingOrdersCount > 0 ? 'anim-skull' : 'anim-char'
+                }`}
+              >
+                {pendingOrdersCount > 0 ? '💀🍾' : '👑🏝️'}
               </div>
-              <div className="text-2xl font-black text-[#3B2313] mt-2">
-                목표 제작 {totalConfirmedUnits}대
+              <div className="mt-1 px-3 py-1 rounded-xl bg-[#1B120C]/90 border border-amber-400 text-center">
+                <div className="text-xs font-black text-amber-300">
+                  1. 유리병 해변
+                </div>
+                <div className="text-[11px] text-rose-300 font-bold">
+                  함정 {pendingOrdersCount}건 대기
+                </div>
               </div>
-              <p className="text-sm font-bold text-emerald-800 mt-1">
-                총 현상금 {formatCurrency(totalConfirmedUnits * 4000000)}
-              </p>
             </div>
 
-            {/* 제3항구 */}
-            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-0.5 rounded-lg bg-teal-800 text-white text-xs font-black">
-                  제3관문 · 선박 보물창고
-                </span>
-                <Gem className="w-5 h-5 text-teal-700" />
+            {/* 2번 섬: 4대 골렘 신전 */}
+            <div
+              onClick={() => setShipStopIndex(1)}
+              className="relative z-10 flex flex-col items-center cursor-pointer group"
+            >
+              <div className="text-4xl anim-char">🗿🤖</div>
+              <div className="mt-1 px-3 py-1 rounded-xl bg-[#1B120C]/90 border border-amber-400 text-center">
+                <div className="text-xs font-black text-amber-300">
+                  2. 골렘 유물 신전
+                </div>
+                <div className="text-[11px] text-emerald-300 font-bold">
+                  확정 {totalConfirmedUnits}대 (개당 400만)
+                </div>
               </div>
-              <div className="text-2xl font-black text-rose-700 mt-2">
-                부족한 보물 {shortageMaterialsCount}종
-              </div>
-              <p className="text-sm font-bold text-[#6B4423] mt-1">
-                보물섬에서 캐와야 할 부자재 파츠!
-              </p>
             </div>
 
-            {/* 제4항구 */}
-            <div className="bg-[#FFF9EA] border-2 border-[#8B5A2B] rounded-2xl p-4 shadow-md">
-              <div className="flex items-center justify-between">
-                <span className="px-2.5 py-0.5 rounded-lg bg-emerald-800 text-white text-xs font-black">
-                  최종 목적지 · 4대 장인섬
+            {/* 3번 섬: 선박 보물창고 */}
+            <div
+              onClick={() => setShipStopIndex(2)}
+              className="relative z-10 flex flex-col items-center cursor-pointer group"
+            >
+              <div className="text-4xl anim-parrot">🦜🗝️</div>
+              <div className="mt-1 px-3 py-1 rounded-xl bg-[#1B120C]/90 border border-amber-400 text-center">
+                <div className="text-xs font-black text-amber-300">
+                  3. 선박 보물창고
+                </div>
+                <div className="text-[11px] text-amber-200 font-bold">
+                  부족 파츠 {shortageMaterialsCount}종
+                </div>
+              </div>
+            </div>
+
+            {/* 4번 섬: 4대 장인의 보물섬 */}
+            <div
+              onClick={() => setShipStopIndex(3)}
+              className="relative z-10 flex flex-col items-center cursor-pointer group"
+            >
+              <div className="text-4xl anim-hammer">🧙‍♂️🔨</div>
+              <div className="mt-1 px-3 py-1 rounded-xl bg-[#1B120C]/90 border border-amber-400 text-center">
+                <div className="text-xs font-black text-amber-300">
+                  4. 장인의 보물섬
+                </div>
+                <div className="text-[11px] text-sky-300 font-bold">
+                  전서구 {sentPoCount}/{supplierPOs.length}섬 완료
+                </div>
+              </div>
+            </div>
+
+            {/* 하단 물결 애니메이션 */}
+            <div className="absolute bottom-1 left-0 right-0 text-center text-lg opacity-45 anim-wave select-none pointer-events-none whitespace-nowrap">
+              🌊 〰️ 🌊 〰️ 🐙 〰️ 🌊 〰️ 🐬 〰️ 🌊 〰️ 🐳 〰️ 🌊 〰️ 🦀 〰️ 🌊
+            </div>
+          </div>
+
+          {/* 🧔‍♂️ 캡틴 케빈 & 🦜 앵무새 항해사 피코의 캐릭터 대화 스테이지 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* 캡틴 케빈 캐릭터 카드 */}
+            <div className="bg-[#FAF0D7] text-[#3B2313] border-3 border-amber-400 rounded-2xl p-4 flex items-center gap-4 shadow-lg">
+              <div className="w-16 h-16 rounded-2xl bg-[#3B2313] border-2 border-amber-400 flex flex-col items-center justify-center shrink-0 anim-char shadow">
+                <span className="text-3xl">🧔‍♂️</span>
+                <span className="text-[10px] font-black text-amber-300">
+                  캡틴 케빈
                 </span>
-                <Trophy className="w-5 h-5 text-amber-500" />
               </div>
-              <div className="text-2xl font-black text-emerald-900 mt-2">
-                전서구 출항 {sentPoCount} / {supplierPOs.length}섬
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-red-700 text-white text-xs font-black">
+                    선장 (Human Confirm)
+                  </span>
+                  <span className="text-xs font-extrabold text-[#6B4423]">
+                    수량 오류 판독 & 최종 발주 인장 담당
+                  </span>
+                </div>
+                <p className="text-base font-black text-[#3B2313] leading-snug">
+                  {captainSpeech}
+                </p>
               </div>
-              <p className="text-sm font-bold text-[#6B4423] mt-1">
-                선장님 인장 날인 후 전서구 발송!
-              </p>
+            </div>
+
+            {/* 앵무새 피코 캐릭터 카드 */}
+            <div className="bg-[#FAF0D7] text-[#3B2313] border-3 border-emerald-500 rounded-2xl p-4 flex items-center gap-4 shadow-lg">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-900 border-2 border-emerald-300 flex flex-col items-center justify-center shrink-0 anim-parrot shadow">
+                <span className="text-3xl">🦜</span>
+                <span className="text-[10px] font-black text-emerald-200">
+                  항해사 피코
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-emerald-800 text-white text-xs font-black">
+                    AI 자동 항해사
+                  </span>
+                  <span className="text-xs font-extrabold text-[#6B4423]">
+                    주문서 자동 해독 & BOM 재고 탐지 담당
+                  </span>
+                </div>
+                <p className="text-base font-black text-emerald-950 leading-snug">
+                  {parrotSpeech}
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -1103,8 +1339,8 @@ function App() {
                 }}
                 className="hidden"
               />
-              <div className="w-16 h-16 rounded-full bg-[#3B2313] text-amber-300 border-4 border-amber-400 flex items-center justify-center mb-3 shadow-lg">
-                <UploadCloud className="w-8 h-8" />
+              <div className="w-16 h-16 rounded-full bg-[#3B2313] text-amber-300 border-4 border-amber-400 flex items-center justify-center mb-3 shadow-lg anim-char text-3xl">
+                🍾
               </div>
               <p className="text-xl font-black text-[#3B2313]">
                 {isDraggingOver
@@ -1290,6 +1526,13 @@ function App() {
                     {/* 좌측: 의뢰 정보 */}
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-2xl">
+                          {isPending ? (
+                            <span className="inline-block anim-skull">💀</span>
+                          ) : (
+                            <span className="inline-block anim-char">👑</span>
+                          )}
+                        </span>
                         <span className="px-2.5 py-0.5 rounded-md bg-[#3B2313] text-amber-300 font-mono text-sm font-black">
                           {ord.id}
                         </span>
@@ -1425,9 +1668,10 @@ function App() {
               return (
                 <div
                   key={model.id}
-                  onClick={() =>
+                  onClick={() => {
                     setSelectedModelTab(isSelected ? 'ALL' : model.id)
-                  }
+                    setShipStopIndex(1)
+                  }}
                   className={`bg-[#FFFDF7] rounded-2xl p-5 border-3 transition cursor-pointer flex flex-col justify-between ${
                     isSelected
                       ? 'border-red-700 ring-4 ring-amber-400/50 shadow-xl'
@@ -1436,8 +1680,9 @@ function App() {
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="px-3 py-1 rounded-lg bg-[#3B2313] text-amber-300 font-mono font-black text-sm">
-                        🗿 {model.id}
+                      <span className="px-3 py-1 rounded-lg bg-[#3B2313] text-amber-300 font-mono font-black text-sm flex items-center gap-1">
+                        <span className="inline-block anim-char">🗿</span>
+                        {model.id}
                       </span>
                       <span className="text-base font-black text-amber-800">
                         🪙 400만 골드
@@ -1623,7 +1868,7 @@ function App() {
               </h2>
             </div>
             <p className="text-base font-bold text-[#6B4423]">
-              각 보물섬 카드의 <strong>[📜 정식 발주서 두루마리 보기]</strong>를 확인하고, <strong>선장님 최종 인장 체크</strong> 후 전서구를 날려 보내세요!
+              각 보물섬 카드의 <strong>[📜 정식 발주서 두루마리 보기]</strong>를 확인하고, <strong>선장님 최종 인장 체크</strong> 후 황금 전서구를 날려 보내세요!
             </p>
           </div>
 
@@ -1632,6 +1877,8 @@ function App() {
               const island = ISLAND_META[po.supplierName] || {
                 islandTitle: `${po.supplierName} 보물섬`,
                 emoji: '🏝️',
+                npcName: '장인 길드장',
+                npcEmoji: '🧙‍♂️',
                 desc: '전설의 부자재 장인들이 모여 사는 보물섬',
               }
 
@@ -1649,8 +1896,11 @@ function App() {
                   <div>
                     <div className="p-6 bg-[#E6CFA0] border-b-2 border-[#8B5A2B] flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3.5">
-                        <div className="w-14 h-14 rounded-2xl bg-[#3B2313] border-2 border-amber-400 flex items-center justify-center text-3xl shrink-0 shadow">
-                          {island.emoji}
+                        <div className="w-16 h-16 rounded-2xl bg-[#3B2313] border-2 border-amber-400 flex flex-col items-center justify-center shrink-0 shadow anim-char">
+                          <span className="text-2xl">{island.npcEmoji}</span>
+                          <span className="text-[10px] font-black text-amber-300">
+                            {island.npcName.split(' ')[1] || '장인'}
+                          </span>
                         </div>
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
@@ -1658,11 +1908,11 @@ function App() {
                               {po.poNo}
                             </span>
                             <h3 className="text-xl font-black text-[#3B2313]">
-                              {island.islandTitle}
+                              {island.emoji} {island.islandTitle}
                             </h3>
                           </div>
-                          <p className="text-xs font-bold text-[#5A381E] mt-1">
-                            {island.desc}
+                          <p className="text-xs font-extrabold text-[#5A381E] mt-1">
+                            섬지기 캐릭터: <strong>{island.npcName}</strong> — "{island.desc}"
                           </p>
                           <p className="text-xs font-mono font-bold text-emerald-900 mt-1 flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5" />
@@ -1747,14 +1997,14 @@ function App() {
                         po.mailSent
                           ? 'bg-emerald-800 text-amber-200 cursor-default'
                           : po.humanConfirmed
-                          ? 'bg-red-700 hover:bg-red-800 text-white cursor-pointer shadow-lg border border-amber-300'
+                          ? 'bg-red-700 hover:bg-red-800 text-white cursor-pointer shadow-lg border border-amber-300 animate-pulse'
                           : 'bg-[#D5BE8B] text-[#8C734B] cursor-not-allowed'
                       }`}
                     >
                       {po.mailSent ? (
                         <>
                           <Trophy className="w-5 h-5 text-amber-300" />
-                          🦅 전서구 출항 & 보물 확보 완료!
+                          🎁 전서구 도착 & 보물상자 획득!
                         </>
                       ) : (
                         <>

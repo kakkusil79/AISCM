@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   ArrowRight,
@@ -8,6 +8,9 @@ import {
   ClipboardList,
   Cpu,
   Eye,
+  FileSpreadsheet,
+  FileText,
+  GripVertical,
   Layers,
   Mail,
   Package,
@@ -16,6 +19,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  UploadCloud,
   UserCheck,
 } from 'lucide-react'
 import {
@@ -25,6 +29,65 @@ import {
   checkQuantityError,
 } from './data/mockScmData'
 import type { BuyerOrder, KioskModelId, SupplierPO } from './types/scm'
+
+interface SampleDraggableFile {
+  id: string
+  fileName: string
+  fileType: 'PDF' | 'EXCEL'
+  buyerName: string
+  modelId: KioskModelId
+  quantity: number
+  suggestedQty: number
+  dueDate: string
+  badgeText: string
+}
+
+const SAMPLE_DRAGGABLE_FILES: SampleDraggableFile[] = [
+  {
+    id: 'SAMPLE-1',
+    fileName: '투썸플레이스_표준키오스크_발주서(35대).pdf',
+    fileType: 'PDF',
+    buyerName: '투썸플레이스 가맹본부',
+    modelId: 'KSK-21',
+    quantity: 35,
+    suggestedQty: 35,
+    dueDate: '2026-11-24',
+    badgeText: '정상 수량 (35대)',
+  },
+  {
+    id: 'SAMPLE-2',
+    fileName: '컴포즈커피_미니키오스크_주문서(2대_오타).xlsx',
+    fileType: 'EXCEL',
+    buyerName: '컴포즈커피 코리아',
+    modelId: 'KSK-15',
+    quantity: 2,
+    suggestedQty: 20,
+    dueDate: '2026-11-21',
+    badgeText: '과소 수량 오류 (2대)',
+  },
+  {
+    id: 'SAMPLE-3',
+    fileName: '롯데시네마_대화면키오스크_발주(990대_오타).pdf',
+    fileType: 'PDF',
+    buyerName: '롯데시네마 멀티플렉스',
+    modelId: 'KSK-27',
+    quantity: 990,
+    suggestedQty: 30,
+    dueDate: '2026-11-26',
+    badgeText: '이상 수량 오타 (990대)',
+  },
+  {
+    id: 'SAMPLE-4',
+    fileName: '파리바게뜨_빌트인키오스크_발주서(15대).xlsx',
+    fileType: 'EXCEL',
+    buyerName: '파리바게뜨 SPC본사',
+    modelId: 'KSK-32',
+    quantity: 15,
+    suggestedQty: 15,
+    dueDate: '2026-11-28',
+    badgeText: '정상 수량 (15대)',
+  },
+]
 
 function formatCurrency(won: number): string {
   const man = won / 10000
@@ -45,6 +108,11 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [previewMailSupplier, setPreviewMailSupplier] = useState<string | null>(null)
 
+  // 드래그 앤 드롭 상태
+  const [isDraggingOver, setIsDraggingOver] = useState(false)
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
   // 오류 주문 수량 수정용 입력 상태
   const [editQtyMap, setEditQtyMap] = useState<Record<string, string>>({
     'ORD-01': '20',
@@ -52,7 +120,7 @@ function App() {
     'ORD-03': '10',
   })
 
-  // 신규 주문 추가 상태
+  // 신규 주문 수동 추가 상태
   const [newBuyer, setNewBuyer] = useState('')
   const [newModel, setNewModel] = useState<KioskModelId>('KSK-21')
   const [newQty, setNewQty] = useState('')
@@ -61,6 +129,131 @@ function App() {
   // 발주처별 2차 사람 확인 및 메일 발송 상태
   const [poConfirmMap, setPoConfirmMap] = useState<Record<string, boolean>>({})
   const [poSentMap, setPoSentMap] = useState<Record<string, boolean>>({})
+
+  const showUploadBanner = (msg: string) => {
+    setUploadNotice(msg)
+    setTimeout(() => {
+      setUploadNotice((prev) => (prev === msg ? null : prev))
+    }, 4500)
+  }
+
+  // 주문서 객체 등록 공통 헬퍼
+  const registerParsedOrder = (params: {
+    buyerName: string
+    modelId: KioskModelId
+    quantity: number
+    suggestedQty?: number
+    dueDate: string
+    sourceLabel: string
+  }) => {
+    const err = checkQuantityError(params.quantity)
+    const nextId = `ORD-${String(orders.length + 1).padStart(2, '0')}`
+    const created: BuyerOrder = {
+      id: nextId,
+      buyerName: params.buyerName,
+      modelId: params.modelId,
+      quantity: params.quantity,
+      dueDate: params.dueDate,
+      errorMsg: err,
+      confirmed: !err,
+    }
+
+    setOrders((prev) => [created, ...prev])
+    if (err) {
+      const fallbackSuggest =
+        params.suggestedQty ??
+        (params.quantity <= 0 ? 10 : params.quantity < 5 ? 20 : 25)
+      setEditQtyMap((prev) => ({
+        ...prev,
+        [nextId]: String(fallbackSuggest),
+      }))
+      showUploadBanner(
+        `📄 [${params.sourceLabel}] 주문서 분석 완료 — 이상 수량(${params.quantity}대)이 감지되어 1차 사람 확인 대기 목록에 추가되었습니다.`
+      )
+    } else {
+      showUploadBanner(
+        `✅ [${params.sourceLabel}] 주문서 분석 완료 — ${params.buyerName} (${params.modelId} · ${params.quantity}대) 정상 등록되어 BOM 및 재고에 반영되었습니다.`
+      )
+    }
+    setPoConfirmMap({})
+    setPoSentMap({})
+  }
+
+  // 샘플 주문서 카드 드래그 시작
+  const handleSampleDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    sample: SampleDraggableFile
+  ) => {
+    e.dataTransfer.setData('application/x-sample-order', JSON.stringify(sample))
+    e.dataTransfer.effectAllowed = 'copy'
+  }
+
+  // 드롭존에 파일 또는 샘플 카드 드롭 시 처리
+  const handleDropZoneDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDraggingOver(false)
+
+    // 1. 화면 내 샘플 주문서 카드를 드래그해서 놓은 경우
+    const sampleJson = e.dataTransfer.getData('application/x-sample-order')
+    if (sampleJson) {
+      try {
+        const sample = JSON.parse(sampleJson) as SampleDraggableFile
+        registerParsedOrder({
+          buyerName: sample.buyerName,
+          modelId: sample.modelId,
+          quantity: sample.quantity,
+          suggestedQty: sample.suggestedQty,
+          dueDate: sample.dueDate,
+          sourceLabel: sample.fileName,
+        })
+        return
+      } catch {
+        // ignore parse error
+      }
+    }
+
+    // 2. 내 컴퓨터의 실제 파일(PDF, Excel 등)을 드래그해서 놓은 경우
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleRealFilesUpload(e.dataTransfer.files)
+    }
+  }
+
+  // 실제 파일 선택 또는 드롭 처리 (파일명에서 업체명·모델·수량 스마트 추출)
+  const handleRealFilesUpload = (fileList: FileList) => {
+    const models: KioskModelId[] = ['KSK-15', 'KSK-21', 'KSK-27', 'KSK-32']
+
+    Array.from(fileList).forEach((file, idx) => {
+      const baseName = file.name.replace(/\.[^/.]+$/, '')
+      const parts = baseName.split(/[_\-\s]+/)
+      const extractedBuyer =
+        parts[0] && parts[0].length >= 2
+          ? `${parts[0]} (파일업로드)`
+          : `신규바이어_${orders.length + idx + 1}`
+
+      // 파일명에 15, 21, 27, 32가 포함되어 있으면 모델 매칭
+      let matchedModel: KioskModelId = models[(orders.length + idx) % models.length]
+      if (baseName.includes('15')) matchedModel = 'KSK-15'
+      else if (baseName.includes('21')) matchedModel = 'KSK-21'
+      else if (baseName.includes('27')) matchedModel = 'KSK-27'
+      else if (baseName.includes('32')) matchedModel = 'KSK-32'
+
+      // 파일명에서 숫자(대수) 추출, 없으면 데모용으로 2대(과소 오류) 또는 20대(정상) 부여
+      const numMatch = baseName.replace(/15|21|27|32/g, '').match(/-?\d+/)
+      const extractedQty = numMatch
+        ? Number(numMatch[0])
+        : idx % 2 === 0
+        ? 3 // 사람 확인 유도용 과소 수량(3대)
+        : 20
+
+      registerParsedOrder({
+        buyerName: extractedBuyer,
+        modelId: matchedModel,
+        quantity: extractedQty,
+        dueDate: '2026-11-25',
+        sourceLabel: file.name,
+      })
+    })
+  }
 
   // 1차 사람 확인: 수량 수정 및 주문 확정
   const handleConfirmOrder = (orderId: string) => {
@@ -90,33 +283,20 @@ function App() {
     setPoSentMap({})
   }
 
-  // 신규 주문서 추가
+  // 신규 주문서 수동 추가
   const handleAddOrder = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newBuyer.trim() || !newQty) return
-    const qtyNum = Number(newQty)
-    const err = checkQuantityError(qtyNum)
-    const created: BuyerOrder = {
-      id: `ORD-0${orders.length + 1}`,
+    registerParsedOrder({
       buyerName: newBuyer.trim(),
       modelId: newModel,
-      quantity: qtyNum,
+      quantity: Number(newQty),
       dueDate: newDue,
-      errorMsg: err,
-      confirmed: !err,
-    }
-    setOrders((prev) => [created, ...prev])
-    if (err) {
-      setEditQtyMap((prev) => ({
-        ...prev,
-        [created.id]: String(qtyNum <= 0 ? 10 : qtyNum < 5 ? 15 : 25),
-      }))
-    }
+      sourceLabel: '수기 입력 주문서',
+    })
     setNewBuyer('')
     setNewQty('')
     setShowAddForm(false)
-    setPoConfirmMap({})
-    setPoSentMap({})
   }
 
   const handleReset = () => {
@@ -128,6 +308,7 @@ function App() {
     })
     setPoConfirmMap({})
     setPoSentMap({})
+    setUploadNotice(null)
   }
 
   // 확정된 주문서 기준으로 BOM 전개 → 부자재별 필요수량 및 부족수량 계산
@@ -250,7 +431,7 @@ function App() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-base font-bold transition cursor-pointer shadow-xs"
             >
               <Plus className="w-4 h-4" />
-              테스트 주문 등록
+              수기 주문 입력
             </button>
             <button
               type="button"
@@ -339,7 +520,144 @@ function App() {
           </div>
         </section>
 
-        {/* 신규 주문 등록 슬라이드 폼 */}
+        {/* 바이어 주문서 드래그 앤 드롭 업로드 존 */}
+        <section className="bg-white rounded-3xl border border-stone-200/90 p-6 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-extrabold text-stone-900 flex items-center gap-2">
+                <UploadCloud className="w-6 h-6 text-teal-700" />
+                바이어 주문서 드래그 앤 드롭 접수
+              </h2>
+              <p className="text-base text-stone-500 mt-0.5">
+                바이어에게 받은 주문서 파일(PDF·엑셀)을 아래 점선 영역에 끌어다 놓거나, 우측의 <strong>샘플 주문서 파일 카드를 마우스로 드래그해서</strong> 놓아보세요.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* 좌측: 드롭존 (7칸) */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDraggingOver(true)
+              }}
+              onDragLeave={() => setIsDraggingOver(false)}
+              onDrop={handleDropZoneDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`lg:col-span-7 rounded-2xl border-2 border-dashed p-7 flex flex-col items-center justify-center text-center transition cursor-pointer ${
+                isDraggingOver
+                  ? 'border-teal-700 bg-teal-50/70 scale-[1.01]'
+                  : 'border-stone-300 bg-[#FAF9F5] hover:border-teal-700/60 hover:bg-stone-100/60'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.xlsx,.xls,.csv,.txt"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleRealFilesUpload(e.target.files)
+                    e.target.value = ''
+                  }
+                }}
+                className="hidden"
+              />
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition ${
+                  isDraggingOver
+                    ? 'bg-teal-700 text-white'
+                    : 'bg-white border border-stone-200 text-teal-800 shadow-xs'
+                }`}
+              >
+                <UploadCloud className="w-7 h-7" />
+              </div>
+              <p className="text-lg font-extrabold text-stone-900">
+                {isDraggingOver
+                  ? '여기에 주문서 파일을 놓아주세요!'
+                  : '바이어 주문서 파일을 이곳에 드래그하거나 클릭하여 업로드'}
+              </p>
+              <p className="text-sm text-stone-500 mt-1">
+                지원 형식: PDF, Excel (.xlsx, .csv) · 업로드 즉시 업체명, 모델명, 수량, 납기를 자동 추출합니다
+              </p>
+            </div>
+
+            {/* 우측: 마우스로 끌어서 테스트할 수 있는 샘플 주문서 파일 4종 (5칸) */}
+            <div className="lg:col-span-5 bg-[#FAF9F5] border border-stone-200/80 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-extrabold text-stone-700">
+                  💡 테스트용 가상 주문서 파일 (끌어서 왼쪽에 놓거나 클릭)
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {SAMPLE_DRAGGABLE_FILES.map((sample) => {
+                  const isErr = sample.quantity < 5 || sample.quantity > 200
+                  return (
+                    <div
+                      key={sample.id}
+                      draggable
+                      onDragStart={(e) => handleSampleDragStart(e, sample)}
+                      onClick={() =>
+                        registerParsedOrder({
+                          buyerName: sample.buyerName,
+                          modelId: sample.modelId,
+                          quantity: sample.quantity,
+                          suggestedQty: sample.suggestedQty,
+                          dueDate: sample.dueDate,
+                          sourceLabel: sample.fileName,
+                        })
+                      }
+                      className="group bg-white hover:bg-teal-50/40 border border-stone-200/90 hover:border-teal-700/50 rounded-xl p-3 flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing transition shadow-[0_1px_6px_rgba(0,0,0,0.02)]"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <GripVertical className="w-4 h-4 text-stone-400 shrink-0 group-hover:text-teal-700" />
+                        {sample.fileType === 'PDF' ? (
+                          <FileText className="w-5 h-5 text-rose-600 shrink-0" />
+                        ) : (
+                          <FileSpreadsheet className="w-5 h-5 text-emerald-700 shrink-0" />
+                        )}
+                        <div className="truncate">
+                          <div className="text-sm font-bold text-stone-900 truncate">
+                            {sample.fileName}
+                          </div>
+                          <div className="text-xs text-stone-500">
+                            {sample.buyerName} · {sample.modelId} · 납기 {sample.dueDate}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 ${
+                          isErr
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-teal-50 text-teal-800'
+                        }`}
+                      >
+                        {sample.badgeText}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 업로드 완료 피드백 배너 */}
+          {uploadNotice && (
+            <div className="bg-teal-900 text-white px-5 py-3.5 rounded-2xl text-base font-bold flex items-center justify-between shadow-sm">
+              <span>{uploadNotice}</span>
+              <button
+                type="button"
+                onClick={() => setUploadNotice(null)}
+                className="text-teal-200 hover:text-white text-sm ml-4 cursor-pointer"
+              >
+                닫기 ✕
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* 신규 주문 수기 등록 폼 */}
         {showAddForm && (
           <form
             onSubmit={handleAddOrder}
@@ -348,7 +666,7 @@ function App() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-teal-700" />
-                새로운 바이어 주문서 테스트 등록
+                바이어 주문서 수기 입력 등록
               </h3>
               <span className="text-sm text-stone-500">
                 수량에 1~4(과소), 201 이상(과다), 음수를 입력하면 1차 사람 확인 대상으로 분류됩니다.
@@ -409,7 +727,7 @@ function App() {
                 Step 1 · Human-in-the-Loop
               </div>
               <h2 className="text-2xl font-extrabold text-stone-900 mt-1">
-                바이어 주문서 접수 및 이상 수량 확인
+                접수된 바이어 주문서 및 이상 수량 확인 ({orders.length}건)
               </h2>
             </div>
             <p className="text-base text-stone-600">

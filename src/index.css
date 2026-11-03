@@ -1,11 +1,16 @@
 @import "tailwindcss";
 
-body {
-  background-color: #f7f4ed;
-  color: #2c302e;
-  font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-  font-size: 17px;
-  line-height: 1.6;
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    background-color: #f6f5f0;
+    background-image: radial-gradient(at 0% 0%, rgba(15, 118, 110, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(180, 83, 9, 0.03) 0px, transparent 50%);
+    color: #1c1917;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    font-size: 16.5px;
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
 }

@@ -1,4 +1,9 @@
-import type { BuyerOrder, KioskModel, MaterialItem } from '../types/scm'
+import type {
+  BuyerOrder,
+  KioskModel,
+  MaterialItem,
+  SupplierInfo,
+} from '../types/scm'
 
 // 1. 키오스크 모델 4종 (모든 모델 개당 단가 4,000,000원 동일)
 export const KIOSK_MODELS: KioskModel[] = [
@@ -56,11 +61,55 @@ export const KIOSK_MODELS: KioskModel[] = [
   },
 ]
 
+// 발주처(공급사) 상세 마스터 정보
+export const SUPPLIER_MAP: Record<string, SupplierInfo> = {
+  코리아임베디드: {
+    name: '코리아임베디드(주)',
+    bizNo: '119-86-40219',
+    ceo: '최윤성',
+    contactName: '박진우 영업팀장',
+    phone: '02-859-3320',
+    email: 'sales@korea-embedded.kr',
+    address: '서울특별시 금천구 가산디지털1로 168 우림라이온스밸리 A동 904호',
+    leadTimeDays: 5,
+  },
+  페이먼트테크: {
+    name: '페이먼트테크(주)',
+    bizNo: '214-88-91034',
+    ceo: '정석호',
+    contactName: '김현수 과장',
+    phone: '02-2104-9088',
+    email: 'po@payment-tech.co.kr',
+    address: '서울특별시 구로구 디지털로 288 대륭포스트타워 1차 12층',
+    leadTimeDays: 4,
+  },
+  한빛디스플레이: {
+    name: '(주)한빛디스플레이',
+    bizNo: '134-81-55201',
+    ceo: '한상훈',
+    contactName: '이준혁 차장',
+    phone: '031-482-7710',
+    email: 'order@hanbit-display.co.kr',
+    address: '경기도 안산시 단원구 산단로 325 반월국가산업단지 4블록',
+    leadTimeDays: 6,
+  },
+  정밀메탈웍스: {
+    name: '정밀메탈웍스(주)',
+    bizNo: '137-85-21908',
+    ceo: '김태호',
+    contactName: '오승환 공장장',
+    phone: '032-579-4401',
+    email: 'metal@jm-metal.com',
+    address: '인천광역시 서구 가좌로 112 정밀판금단지 B동',
+    leadTimeDays: 7,
+  },
+}
+
 // 2. 부자재 마스터 (공통 부자재 4종 단가 동일 = 225만원 / 크기·규격별 부자재 2종 = 175만원 → 모델당 총 400만원)
 export const INITIAL_MATERIALS: MaterialItem[] = [
-  // [공통 부자재] 4개 모델 모두 동일하게 사용되며 단가도 동일함 (소계: 2,250,000원)
   {
     id: 'MAT-BOARD',
+    code: 'PT-MB-STD01',
     name: '산업용 통합 메인보드 (공용)',
     specType: '공통 부자재',
     unitCost: 850000,
@@ -70,6 +119,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-READER',
+    code: 'PT-PAY-IC02',
     name: '카드·간편결제 리더기 (공용)',
     specType: '공통 부자재',
     unitCost: 500000,
@@ -79,6 +129,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-PRINTER',
+    code: 'PT-PRT-TH03',
     name: '자동절단 영수증 프린터 (공용)',
     specType: '공통 부자재',
     unitCost: 500000,
@@ -88,6 +139,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-POWER',
+    code: 'PT-PWR-SM04',
     name: '고효율 통합 전원모듈 (공용)',
     specType: '공통 부자재',
     unitCost: 400000,
@@ -95,11 +147,9 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
     supplierName: '코리아임베디드',
     supplierEmail: 'sales@korea-embedded.kr',
   },
-
-  // [모델별 크기·규격 부자재] 화면 크기별 터치패널 + 외함 규격에서 단가를 맞춰 각 모델 합계 400만원 구성
-  // KSK-15 전용: 패널(75만) + 전동 카운터 외함(100만) = 175만원 (+ 공통 225만 = 400만원)
   {
     id: 'MAT-PANEL-15',
+    code: 'PN-TCH-150',
     name: '15인치 정전식 터치패널',
     specType: '모델별 규격 부자재',
     unitCost: 750000,
@@ -109,6 +159,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-CASE-15',
+    code: 'CS-ENC-150',
     name: '15인치 높이조절 카운터 외함',
     specType: '모델별 규격 부자재',
     unitCost: 1000000,
@@ -116,10 +167,9 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
     supplierName: '정밀메탈웍스',
     supplierEmail: 'metal@jm-metal.com',
   },
-
-  // KSK-21 전용: 패널(90만) + 표준 스탠드 외함(85만) = 175만원 (+ 공통 225만 = 400만원)
   {
     id: 'MAT-PANEL-21',
+    code: 'PN-TCH-215',
     name: '21인치 FHD 강화유리 터치패널',
     specType: '모델별 규격 부자재',
     unitCost: 900000,
@@ -129,6 +179,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-CASE-21',
+    code: 'CS-ENC-215',
     name: '21인치 표준 스탠드 타워 외함',
     specType: '모델별 규격 부자재',
     unitCost: 850000,
@@ -136,10 +187,9 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
     supplierName: '정밀메탈웍스',
     supplierEmail: 'metal@jm-metal.com',
   },
-
-  // KSK-27 전용: 패널(105만) + 슬림 스탠드 외함(70만) = 175만원 (+ 공통 225만 = 400만원)
   {
     id: 'MAT-PANEL-27',
+    code: 'PN-TCH-270',
     name: '27인치 QHD 대화면 터치패널',
     specType: '모델별 규격 부자재',
     unitCost: 1050000,
@@ -149,6 +199,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-CASE-27',
+    code: 'CS-ENC-270',
     name: '27인치 슬림 스탠드·월마운트 외함',
     specType: '모델별 규격 부자재',
     unitCost: 700000,
@@ -156,10 +207,9 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
     supplierName: '정밀메탈웍스',
     supplierEmail: 'metal@jm-metal.com',
   },
-
-  // KSK-32 전용: 패널(120만) + 빌트인 오픈프레임 외함(55만) = 175만원 (+ 공통 225만 = 400만원)
   {
     id: 'MAT-PANEL-32',
+    code: 'PN-TCH-320',
     name: '32인치 고휘도 와이드 터치패널',
     specType: '모델별 규격 부자재',
     unitCost: 1200000,
@@ -169,6 +219,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
   },
   {
     id: 'MAT-CASE-32',
+    code: 'CS-ENC-320',
     name: '32인치 매립형 빌트인 프레임 외함',
     specType: '모델별 규격 부자재',
     unitCost: 550000,
@@ -181,7 +232,7 @@ export const INITIAL_MATERIALS: MaterialItem[] = [
 // 수량 오류 체크 함수
 export function checkQuantityError(qty: number): string | undefined {
   if (!Number.isFinite(qty) || qty <= 0) {
-    return `잘못된 숫자(${qty}대): 0 이하 음수입니다.`
+    return `잘못된 숫자(${qty}대): 0 이하 음수가 입력되었습니다.`
   }
   if (!Number.isInteger(qty)) {
     return `잘못된 숫자(${qty}대): 소수점 수량입니다.`
@@ -190,54 +241,102 @@ export function checkQuantityError(qty: number): string | undefined {
     return `수량 과소(${qty}대): 최소 주문 기준(5대)보다 너무 적습니다.`
   }
   if (qty > 200) {
-    return `이상 수량(${qty}대): 단일 주문 상한(200대)을 초과한 오타 의심 숫자입니다.`
+    return `이상 수량(${qty.toLocaleString()}대): 단일 주문 상한(200대)을 초과한 오타 의심 숫자입니다.`
   }
   return undefined
 }
 
-// 3. 바이어 주문서 초기 데이터
+// 3. 바이어 주문서 초기 데이터 (주문서 원문 상세 정보 포함)
 export const INITIAL_ORDERS: BuyerOrder[] = [
   {
     id: 'ORD-01',
-    buyerName: '메가커피 본사',
+    docNo: 'MEGA-PO-2026-1101',
+    orderDate: '2026-11-03',
+    buyerName: '메가MGC커피 프랜차이즈 본사',
+    buyerBizNo: '211-88-79102',
+    buyerCeo: '김대영',
+    buyerManager: '강동원 구매팀장',
+    buyerPhone: '02-3442-8810',
+    deliveryPlace: '경기도 하남시 미사대로 520 메가물류센터 B동',
     modelId: 'KSK-21',
+    rawQuantity: 1,
     quantity: 1,
     dueDate: '2026-11-20',
-    errorMsg: '수량 과소(1대): 최소 기준(5대)보다 너무 적습니다.',
+    docMemo:
+      '11월 수도권 신규 가맹점 20개 매장 오픈 일괄 납품건 (매장당 1대씩 총 20대 납품 요망 — 담당자 표 입력 시 숫자 0 누락으로 1대로 오기재됨)',
+    errorMsg: '수량 과소(1대): 주문서 비고에는 "20개 매장(총 20대)"이나 수량란에 "1대"로 오기재됨',
     confirmed: false,
   },
   {
     id: 'ORD-02',
-    buyerName: '버거킹덤 코리아',
+    docNo: 'BKR-202611-088',
+    orderDate: '2026-11-03',
+    buyerName: '(주)버거킹덤 코리아',
+    buyerBizNo: '104-81-33920',
+    buyerCeo: '이동형',
+    buyerManager: '이수진 구매대리',
+    buyerPhone: '02-6203-1190',
+    deliveryPlace: '인천광역시 서구 원창동 통합물류허브 3층',
     modelId: 'KSK-27',
+    rawQuantity: 2500,
     quantity: 2500,
     dueDate: '2026-11-22',
-    errorMsg: '이상 수량(2,500대): 오타 의심 대량 숫자입니다.',
+    docMemo:
+      '하반기 직영점 매장 리뉴얼 25개점 교체분 발주 (품의 예산: 400만 원 × 25대 = 1억 원 / 수량란에 00이 추가로 잘못 입력됨)',
+    errorMsg: '이상 수량(2,500대): 주문서 비고의 "25대(1억 원)" 대비 숫자 0이 두 번 더 입력된 오타',
     confirmed: false,
   },
   {
     id: 'ORD-03',
-    buyerName: '스타파킹 모빌리티',
+    docNo: 'STAR-PK-261103',
+    orderDate: '2026-11-03',
+    buyerName: '스타파킹 모빌리티(주)',
+    buyerBizNo: '120-87-66104',
+    buyerCeo: '윤성호',
+    buyerManager: '박상민 차장',
+    buyerPhone: '02-558-9201',
+    deliveryPlace: '서울특별시 강서구 마곡중앙로 스마트주차타워 현장',
     modelId: 'KSK-32',
+    rawQuantity: -10,
     quantity: -10,
     dueDate: '2026-11-25',
-    errorMsg: '잘못된 숫자(-10대): 음수가 입력되었습니다.',
+    docMemo:
+      '마곡 스마트주차타워 무인정산소 빌트인 키오스크 10대 발주건 (엑셀 수식 부호 오류로 -10으로 표기됨)',
+    errorMsg: '잘못된 숫자(-10대): 비고 기준 10대 발주건이나 엑셀 부호 오류로 음수(-10) 기재됨',
     confirmed: false,
   },
   {
     id: 'ORD-04',
-    buyerName: '올리브마켓 리테일',
+    docNo: 'OLV-2026-9912',
+    orderDate: '2026-11-03',
+    buyerName: '(주)올리브마켓 리테일',
+    buyerBizNo: '106-86-51029',
+    buyerCeo: '송민규',
+    buyerManager: '조은비 과장',
+    buyerPhone: '02-6920-5512',
+    deliveryPlace: '경기도 용인시 처인구 양지면 올리브 통합물류센터',
     modelId: 'KSK-21',
+    rawQuantity: 30,
     quantity: 30,
     dueDate: '2026-11-18',
+    docMemo: '전국 주요 직영점 셀프체크아웃 존 설치분 30대 정식 발주 (검수 담당: 조은비 과장)',
     confirmed: true,
   },
   {
     id: 'ORD-05',
-    buyerName: '청담다이닝 그룹',
+    docNo: 'CDG-PO-261105',
+    orderDate: '2026-11-03',
+    buyerName: '청담다이닝 그룹(주)',
+    buyerBizNo: '215-87-10944',
+    buyerCeo: '한지민',
+    buyerManager: '장현우 실장',
+    buyerPhone: '02-512-7040',
+    deliveryPlace: '서울특별시 강남구 도산대로 45길 18 본사 물류팀',
     modelId: 'KSK-15',
+    rawQuantity: 25,
     quantity: 25,
     dueDate: '2026-11-19',
+    docMemo: '프리미엄 캐주얼 다이닝 25개 지점 카운터 설치용 15인치 키오스크 25대 발주',
     confirmed: true,
   },
 ]

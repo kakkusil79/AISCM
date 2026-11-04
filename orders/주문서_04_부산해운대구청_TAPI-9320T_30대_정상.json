@@ -1,0 +1,317 @@
+{
+  "documentType": "PUBLIC_PROCUREMENT_PURCHASE_ORDER",
+  "schemaVersion": "2026.11-G2B",
+  "orderHeader": {
+    "orderId": "ORD-04",
+    "docNo": "BUSAN-HUD-2026-9912",
+    "orderDate": "2026-11-04",
+    "dueDate": "2026-11-18",
+    "status": "CONFIRMED_NORMAL",
+    "verificationNote": "정상 수량 발주건 (30대 × 4,000,000원 = 120,000,000원)"
+  },
+  "buyer": {
+    "buyerName": "부산광역시 해운대구청",
+    "buyerBizNo": "617-83-00192",
+    "buyerCeo": "김성수",
+    "buyerManager": "조은비 과장 (민원여권과)",
+    "buyerPhone": "051-749-4260",
+    "deliveryPlace": "부산광역시 해운대구 중동2로 11 해운대구청 신청사 및 관내 민원센터 30개소"
+  },
+  "supplier": {
+    "supplierName": "한국타피(주)",
+    "productCategory": "무인민원발급기",
+    "specReference": "한국타피(주) 무인민원발급기 규격서 3.1항"
+  },
+  "orderLineItem": {
+    "modelId": "TAPI-9320T",
+    "itemIdentificationNo": "24292470",
+    "modelDescription": "32인치 대화면 겸용 무인민원발급기 (전정식 터치 / 촉각모니터·음성유도기 제외 모델)",
+    "dimensions": "폭824 x 깊이865 x 높이1652 (mm)",
+    "rawQuantity": 30,
+    "confirmedQuantity": 30,
+    "unitPrice": 4000000,
+    "supplyAmount": 120000000,
+    "vatAmount": 12000000,
+    "totalAmount": 132000000,
+    "docMemo": "해운대구 주요 역사 및 행정복지센터 32인치 대화면 무인민원발급기(TAPI-9320T) 30대 정식 발주 (검수 담당: 조은비 과장)"
+  },
+  "unitBomSpecification": {
+    "modelId": "TAPI-9320T",
+    "itemIdentificationNo": "24292470",
+    "partCount": 18,
+    "totalUnitQuantity": 21,
+    "unitTargetCost": 4000000,
+    "materials": [
+      {
+        "no": 1,
+        "partName": "본체(PC)",
+        "spec": "Intel i5 10400 2.9GHz이상 / RAM 8GB(DDR4) / SSD 256GB, HDD 500GB",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 480000,
+        "amountPerUnit": 480000,
+        "supplier": {
+          "companyName": "(가상)한빛시스템",
+          "contactPerson": "김민수 과장",
+          "email": "minsu.kim@hanbit-sys.example",
+          "note": "PC·OS 일괄 공급"
+        }
+      },
+      {
+        "no": 2,
+        "partName": "운영체제",
+        "spec": "MS Windows OS",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 80000,
+        "amountPerUnit": 80000,
+        "supplier": {
+          "companyName": "(가상)한빛시스템",
+          "contactPerson": "김민수 과장",
+          "email": "minsu.kim@hanbit-sys.example",
+          "note": "PC·OS 일괄 공급"
+        }
+      },
+      {
+        "no": 3,
+        "partName": "모니터",
+        "spec": "TFT Color LCD 32 inch",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 300000,
+        "amountPerUnit": 300000,
+        "supplier": {
+          "companyName": "(가상)새솔디스플레이",
+          "contactPerson": "이지은 대리",
+          "email": "jieun.lee@saesol-disp.example",
+          "note": "32인치 전용"
+        }
+      },
+      {
+        "no": 4,
+        "partName": "터치",
+        "spec": "전정식터치방식",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 110000,
+        "amountPerUnit": 110000,
+        "supplier": {
+          "companyName": "(가상)누리터치텍",
+          "contactPerson": "박준호 과장",
+          "email": "junho.park@nuri-touch.example",
+          "note": "32인치 전정식 방식"
+        }
+      },
+      {
+        "no": 5,
+        "partName": "복합편철기",
+        "spec": "배출/간추림/편철",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 400000,
+        "amountPerUnit": 400000,
+        "supplier": {
+          "companyName": "(가상)다온메카닉스",
+          "contactPerson": "최서연 차장",
+          "email": "seoyeon.choi@daon-mech.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 6,
+        "partName": "출력프린터",
+        "spec": "A4 / 61PPM / 1200 * 1200 dpi",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 560000,
+        "amountPerUnit": 560000,
+        "supplier": {
+          "companyName": "(가상)바른프린텍",
+          "contactPerson": "정우진 과장",
+          "email": "woojin.jung@bareun-print.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 7,
+        "partName": "무정전전원장치",
+        "spec": "3.0 kVA",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 240000,
+        "amountPerUnit": 240000,
+        "supplier": {
+          "companyName": "(가상)든든파워",
+          "contactPerson": "강하늘 대리",
+          "email": "haneul.kang@deundeun-power.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 8,
+        "partName": "수수료정산장치",
+        "spec": "코인/지폐 투입및배출제어",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 320000,
+        "amountPerUnit": 320000,
+        "supplier": {
+          "companyName": "(가상)모아캐시텍",
+          "contactPerson": "윤태영 부장",
+          "email": "taeyoung.yoon@moa-cash.example",
+          "note": "정산장치·호퍼·지폐인식기 일괄"
+        }
+      },
+      {
+        "no": 9,
+        "partName": "코인호퍼",
+        "spec": "50원/100원/500원",
+        "qtyPerUnit": 3,
+        "totalRequiredQtyFor30Units": 90,
+        "unitCost": 60000,
+        "amountPerUnit": 180000,
+        "supplier": {
+          "companyName": "(가상)모아캐시텍",
+          "contactPerson": "윤태영 부장",
+          "email": "taeyoung.yoon@moa-cash.example",
+          "note": "1대당 3개 소요"
+        }
+      },
+      {
+        "no": 10,
+        "partName": "지폐인식기",
+        "spec": "(신권)1000원/5000원/10000원",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 160000,
+        "amountPerUnit": 160000,
+        "supplier": {
+          "companyName": "(가상)모아캐시텍",
+          "contactPerson": "윤태영 부장",
+          "email": "taeyoung.yoon@moa-cash.example",
+          "note": "정산장치·호퍼·지폐인식기 일괄"
+        }
+      },
+      {
+        "no": 11,
+        "partName": "지문스캐너",
+        "spec": "광학식 / 500dpi",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 120000,
+        "amountPerUnit": 120000,
+        "supplier": {
+          "companyName": "(가상)아이디원",
+          "contactPerson": "한소희 대리",
+          "email": "sohee.han@id-one.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 12,
+        "partName": "감시카메라",
+        "spec": "CMOS 500만화소 (HDD 500GB에 저장)",
+        "qtyPerUnit": 2,
+        "totalRequiredQtyFor30Units": 60,
+        "unitCost": 40000,
+        "amountPerUnit": 80000,
+        "supplier": {
+          "companyName": "(가상)지킴이비전",
+          "contactPerson": "오성민 과장",
+          "email": "sungmin.oh@jikimi-vision.example",
+          "note": "1대당 2개 소요"
+        }
+      },
+      {
+        "no": 13,
+        "partName": "장애인용 점자 키패드",
+        "spec": "22 Key, PS/2",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 60000,
+        "amountPerUnit": 60000,
+        "supplier": {
+          "companyName": "(가상)함께누리",
+          "contactPerson": "서예린 주임",
+          "email": "yerin.seo@hamkke-nuri.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 14,
+        "partName": "QR리더기",
+        "spec": "image Sensor 800x800 CMOS",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 60000,
+        "amountPerUnit": 60000,
+        "supplier": {
+          "companyName": "(가상)코드스캔",
+          "contactPerson": "임도현 대리",
+          "email": "dohyun.lim@codescan.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 15,
+        "partName": "영수증프린터",
+        "spec": "200DPI/2inch/열전사방식",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 80000,
+        "amountPerUnit": 80000,
+        "supplier": {
+          "companyName": "(가상)바른프린텍",
+          "contactPerson": "정우진 과장",
+          "email": "woojin.jung@bareun-print.example",
+          "note": "출력프린터와 동일 업체"
+        }
+      },
+      {
+        "no": 16,
+        "partName": "시군구 로그 홍보용 LED조명판",
+        "spec": "가로320*세로420 (mm) / LED램프, 소비전력2W",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 40000,
+        "amountPerUnit": 40000,
+        "supplier": {
+          "companyName": "(가상)빛누리사인",
+          "contactPerson": "문재현 실장",
+          "email": "jaehyun.moon@bitnuri-sign.example",
+          "note": "공통"
+        }
+      },
+      {
+        "no": 17,
+        "partName": "통합보드",
+        "spec": "유도안내LED램프/도어감지센서/워치독",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 80000,
+        "amountPerUnit": 80000,
+        "supplier": {
+          "companyName": "(가상)다온메카닉스",
+          "contactPerson": "최서연 차장",
+          "email": "seoyeon.choi@daon-mech.example",
+          "note": "편철기와 동일 업체"
+        }
+      },
+      {
+        "no": 18,
+        "partName": "함체(외함)",
+        "spec": "철판 및 기타재료 (폭824 x 깊이865 x 높이1652 mm)",
+        "qtyPerUnit": 1,
+        "totalRequiredQtyFor30Units": 30,
+        "unitCost": 650000,
+        "amountPerUnit": 650000,
+        "supplier": {
+          "companyName": "(가상)튼튼금속",
+          "contactPerson": "배상우 공장장",
+          "email": "sangwoo.bae@teunteun-metal.example",
+          "note": "잔액 조정 (판금·도장)"
+        }
+      }
+    ]
+  }
+}
